@@ -2,7 +2,9 @@
 
 I wanted to know whether a local model could act as the *worker* in a hybrid setup —
 a big cloud model plans and reviews, a local model does the bounded editing. So I
-built a harness that grades models objectively and ran nine configurations through it.
+built a harness that grades models objectively and ran nine configurations through it,
+across two runtimes (MLX and llama.cpp), five quantizations, and with and without
+speculative decoding.
 
 **The single most useful result was that I got it wrong.**
 
@@ -332,6 +334,95 @@ Across both rounds, **7 of 8 models** were cheaper, better-scoped, or both with
 SEARCH/REPLACE. The one exception was Qwen3.5, which used 1.7× *more* tokens on
 anchor edits.
 
+## 11. A 27B model at 1-bit matched its 4-bit self
+
+Bonsai-27B is Qwen3.6-27B compressed end-to-end to 1-bit. Same base model, so this
+is a controlled quantization test rather than a leaderboard comparison — but only if
+the runtime is neutral, which had to be measured first.
+
+| | Qwen3.6-27B MLX 4-bit | Qwen3.6-27B GGUF Q4_0 | **Bonsai-27B 1-bit** |
+|---|---|---|---|
+| Score | 3/5 | 3/5 | **3/5** |
+| Disk | 15 GB | 14.7 GB | **3.5 GB** |
+| Resident | 14.6 GiB | 16.4 GiB | **5.4 GiB** |
+| Total time | 1,462s | 1,608s | **665s** |
+| tok/s | 14.8 | 15.3 | **25.3** |
+
+Two readings, in order:
+
+**Runtime is neutral.** MLX and llama.cpp, same model, same quantization: 3/5 both,
+14.8 vs 15.3 tok/s. A ~3% difference. Neither engine is "better" — llama.cpp's value
+is that it runs models MLX cannot.
+
+**1-bit cost nothing measurable here.** Identical score at **4.2× smaller and 2.4×
+faster**. Not merely the same total — the *same three tasks passed and the same two
+failed*, and it failed the no-op trap the same way its 4-bit self did. That failure
+mode survived 4× compression intact.
+
+This also reframes result #3 above. Testing 5-bit against 6-bit produced byte-identical
+output and taught us nothing; the interesting quantization territory was far more
+aggressive than we were looking.
+
+**Caveat, and it is a real one:** five tasks on one repository. This shows 1-bit
+survived *these* edits. It is not evidence that 1-bit is lossless, and I would expect
+differences to appear on harder or longer tasks.
+
+**A trap for anyone repeating this:** `Ternary-Bonsai-27B-Q2_0.gguf` will not load in
+upstream llama.cpp —
+
+```
+tensor 'output_norm.weight' has offset 337715200, expected 357580800
+```
+
+Reproduced on a freshly downloaded, size-verified file, so it is not corruption.
+Bonsai's `Q2_0` has a different block layout from upstream's `Q2_0` **of the same
+name**, and needs their patched build. A quant type appearing in
+`llama-quantize --help` does not mean an arbitrary file claiming that type will load.
+
+## 12. Speculative decoding: works, but is not output-identical
+
+Every timing above uses plain autoregressive decoding, so I checked whether
+speculative decoding invalidates the speed-based conclusions.
+
+**On Qwen3.6-27B it is impossible**, for three independent reasons:
+
+- the published MTP drafter is `model_type: qwen3_5_mtp`, which mlx-lm does not implement
+- its hybrid attention uses `ArraysCache`, which is not trimmable — so *any* external
+  drafter is rejected
+- its vocab is 248,320 against Qwen3-0.6B's 151,936 — not even tokenizer-compatible
+
+So the slowness of the Qwen3.6 models is real and unavoidable in this runtime, and
+mlx-lm cannot use MTP heads at all.
+
+**On Qwen3-Coder-30B** (standard trimmable cache, matching vocab) it works:
+
+| Arm | Score | Wall clock | tok/s |
+|---|---|---|---|
+| baseline | 5/5 | 57.8s | 59.7 |
+| draft n=3 | 5/5 | 40.8s | **69.2** |
+| draft n=5 | 5/5 | 39.8s | 66.8 |
+
+**1.16× decode speedup** — quote tok/s, not wall clock, because the 1.42× wall-clock
+figure is inflated by shorter outputs. Drafting 5 ahead is *worse* than 3.
+
+But it is **not output-equivalent**, which it should be:
+
+| Run | baseline → n=3 → n=5 |
+|---|---|
+| T3 search/replace | 114 → 114 → 114 (identical) |
+| T5 trap whole-file | 1050 → 1050 → 1050 (identical) |
+| T4 implement | 336 → **145** → **145** |
+| T5 trap search/replace | 910 → **463** → **298** |
+
+3 of 5 runs diverged, and that last row is decisive: **output depends on how many
+tokens were drafted.** Under correct greedy speculative decoding the target model
+verifies every draft token, so the result must be bit-identical regardless of draft
+length. It is not.
+
+Task correctness survived (5/5 in every arm), and the token-skipping in mlx-lm
+issue #846 did not reproduce. But "free speedup, identical results" is false here —
+a poor trade for a worker role where reproducibility matters.
+
 ## What I'd actually deploy
 
 **`mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit`** — 7/9 overall at **6,069 tokens
@@ -358,8 +449,16 @@ history rather than quietly edited out.
 
 ## Reproducing this
 
-See [REPRODUCE.md](REPRODUCE.md). The harness is ~400 lines of Python with no
-dependencies beyond `mlx-lm` and `npx`.
+See [REPRODUCE.md](REPRODUCE.md). The harness is ~900 lines of Python with no
+dependencies beyond `mlx-lm`, `llama.cpp` and `npx`.
+
+| Script | What it runs |
+|---|---|
+| `bench.py` | round 1: two `tsc` repair tasks |
+| `bench_extended.py` | runtime bug, implement-from-spec, no-op trap |
+| `bench_specdec.py` | speculative decoding, graded not just timed |
+| `bench_llamacpp.py` | llama.cpp arm — runtime and quantization controls |
+| `screen_config.py` | pre-download architecture / KV screen |
 
 ## Limitations
 
@@ -385,8 +484,15 @@ column. On a trap task in particular, "produced nothing usable" and "correctly
 declined" are indistinguishable unless you check `finish_reason`. The superseded
 results are kept in `results/*-BADGRADER.json`.
 
+Timings for the llama.cpp arm come from a different runtime, so they are indicative
+rather than strictly comparable — which is exactly why the same-quantization control
+was measured first.
+
 I have not tested multi-turn agentic loops, which is where these models are actually
-used, and where I'd expect the ranking to shift again.
+used, and where I'd expect the ranking to shift again. Published data from Aider finds
+diff and whole-file formats have *similar single-turn correctness* but that whole-file
+is more stable across multi-turn tasks — so the diff-only recommendation here is
+supported for bounded single-shot edits and explicitly unresolved for multi-turn.
 
 ## License
 

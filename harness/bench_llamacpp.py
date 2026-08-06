@@ -69,10 +69,23 @@ def main():
         sys.exit("fixture not pristine")
 
     only = sys.argv[1] if len(sys.argv) > 1 else None
+    # MERGE with any existing results rather than overwriting: this script is
+    # normally invoked once per model (to keep one model resident at a time), and
+    # a plain overwrite silently destroys the previous arm's data.
     results = {"started": time.strftime("%Y-%m-%d %H:%M:%S"),
                "mlx_reference": {"model": "Qwen3.6-27B-4bit (MLX)",
                                  "score": "3/5", "total_s": 1462, "tok_per_s": 14.8},
                "models": []}
+    if RESULTS.exists():
+        try:
+            prev = json.loads(RESULTS.read_text())
+            keep = [m for m in prev.get("models", [])
+                    if m.get("runs") and (not only or only.lower() not in
+                                          m.get("label", "").lower())]
+            results["models"] = keep
+            print(f"merging with {len(keep)} existing arm(s)", flush=True)
+        except Exception:
+            pass
 
     for label, path, args in MODELS:
         if only and only.lower() not in label.lower():

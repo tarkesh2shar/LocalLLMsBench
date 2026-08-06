@@ -1,69 +1,12 @@
 {
+  "started": "2026-08-06 12:13:06",
   "mlx_reference": {
     "model": "Qwen3.6-27B-4bit (MLX)",
     "score": "3/5",
     "total_s": 1462,
-    "tok_per_s": 14.8,
-    "rss_gib": 14.6
+    "tok_per_s": 14.8
   },
-  "design": "MLX 4-bit vs GGUF Q4_0 isolates RUNTIME; GGUF Q4_0 vs Bonsai 1-bit isolates QUANTIZATION. Bonsai IS Qwen3.6-27B compressed, so the base model is held constant throughout.",
   "models": [
-    {
-      "label": "qwen3.6-27b-gguf-q4_0",
-      "gguf": "/Users/tusharpant/models/gguf/Qwen3.6-27B-Q4_0.gguf",
-      "size_gb": 14.71,
-      "rss_gib": 16.37,
-      "canary": {
-        "missing": [],
-        "tok_per_s": 15.4
-      },
-      "runs": [
-        {
-          "task": "T3_runtime_bug",
-          "arm": "whole_file",
-          "passed": true,
-          "lines_changed": 2,
-          "completion_tokens": 3106,
-          "elapsed_s": 208.57
-        },
-        {
-          "task": "T3_runtime_bug",
-          "arm": "search_replace",
-          "passed": true,
-          "lines_changed": 2,
-          "completion_tokens": 858,
-          "elapsed_s": 55.5
-        },
-        {
-          "task": "T4_implement_spec",
-          "arm": "whole_file",
-          "passed": true,
-          "lines_changed": 6,
-          "completion_tokens": 5020,
-          "elapsed_s": 319.08
-        },
-        {
-          "task": "T5_noop_trap",
-          "arm": "whole_file",
-          "passed": false,
-          "lines_changed": 102,
-          "completion_tokens": 7847,
-          "elapsed_s": 518.1
-        },
-        {
-          "task": "T5_noop_trap",
-          "arm": "search_replace",
-          "passed": false,
-          "lines_changed": 2,
-          "completion_tokens": 7839,
-          "elapsed_s": 506.46
-        }
-      ],
-      "score": "3/5",
-      "total_s": 1607.7,
-      "tok_per_s": 15.3,
-      "note": "reconstructed from llamacpp-control.log; its JSON was overwritten by a later run"
-    },
     {
       "label": "bonsai-27b-1bit-q1_0",
       "gguf": "/Users/tusharpant/.cache/huggingface/hub/models--prism-ml--Bonsai-27B-gguf/snapshots/f10afb355f104535e3e3e98cf7ab7795c72bd292/Bonsai-27B-Q1_0.gguf",
@@ -205,7 +148,17 @@
       "score": "3/5",
       "total_s": 665.2,
       "tok_per_s": 25.3
+    },
+    {
+      "label": "ternary-bonsai-27b-q2_0",
+      "gguf": "/Users/tusharpant/models/gguf/Ternary-Bonsai-27B-Q2_0.gguf",
+      "size_gb": 6.67,
+      "runs": [],
+      "fatal": "RuntimeError: llama-server exited (1):\n80800\n0.00.082.358 E gguf_init_from_reader: failed to read tensor data\n0.00.083.667 E llama_model_load: error loading model: llama_model_loader: failed to load model from /Users/tusharpant/models/gguf/Ternary-Bonsai-27B-Q2_0.gguf\n0.00.083.750 E llama_model_load_from_file_impl: failed to load model\n0.00.084.178 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model\n0.00.111.931 E gguf_init_from_reader: tensor 'output_norm.weight' has offset 337715200, expected 357580800\n0.00.111.934 E gguf_init_from_reader: failed to read tensor data\n0.00.112.821 E llama_model_load: error loading model: llama_model_loader: failed to load model from /Users/tusharpant/models/gguf/Ternary-Bonsai-27B-Q2_0.gguf\n0.00.112.822 E llama_model_load_from_file_impl: failed to load model\n0.00.112.823 E cmn  common_init_: failed to load model '/Users/tusharpant/models/gguf/Ternary-Bonsai-27B-Q2_0.gguf'\n0.00.112.824 E srv    load_model: failed to load model, '/Users/tusharpant/models/gguf/Ternary-Bonsai-27B-Q2_0.gguf'\n0.00.112.826 I srv    operator(): operator(): cleaning up before exit...\n0.00.113.028 E srv  llama_server: exiting due to model loading error\n",
+      "score": "0/0",
+      "total_s": 0,
+      "tok_per_s": null
     }
   ],
-  "ternary_note": "Ternary-Bonsai-27B-Q2_0 will not load in upstream llama.cpp: 'tensor output_norm.weight has offset 337715200, expected 357580800'. Reproduced on a freshly downloaded, size-verified file, so this is a format incompatibility, not corruption -- Bonsai's Q2_0 block layout differs from upstream's Q2_0 of the same name. Needs their patched build."
+  "finished": "2026-08-06 12:24:27"
 }

@@ -71,7 +71,7 @@ export const getWeatherDescription = (code: number): string => {
 
 export const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {
   if (unit === 'fahrenheit') {
-    return (celsius * 9) / 5 + 30;
+    return (celsius * 9) / 5 + 32;
   }
   return celsius;
 };
