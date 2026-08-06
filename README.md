@@ -340,13 +340,12 @@ Bonsai-27B is Qwen3.6-27B compressed end-to-end to 1-bit. Same base model, so th
 is a controlled quantization test rather than a leaderboard comparison — but only if
 the runtime is neutral, which had to be measured first.
 
-| | Qwen3.6-27B MLX 4-bit | Qwen3.6-27B GGUF Q4_0 | **Bonsai-27B 1-bit** |
-|---|---|---|---|
-| Score | 3/5 | 3/5 | **3/5** |
-| Disk | 15 GB | 14.7 GB | **3.5 GB** |
-| Resident | 14.6 GiB | 16.4 GiB | **5.4 GiB** |
-| Total time | 1,462s | 1,608s | **665s** |
-| tok/s | 14.8 | 15.3 | **25.3** |
+| Build | Score | Disk | Resident | Total time | tok/s |
+|---|---|---|---|---|---|
+| Qwen3.6-27B MLX 4-bit | **3/5** | 15 GB | 14.6 GiB | 1,462s | 14.8 |
+| Qwen3.6-27B GGUF Q4_0 | **3/5** | 14.7 GB | 16.4 GiB | 1,608s | 15.3 |
+| Bonsai-27B ternary (g64) | **3/5** | 7.1 GB | 9.0 GiB | 1,008s | 25.0 |
+| Bonsai-27B **1-bit** | **3/5** | **3.5 GB** | **5.4 GiB** | **665s** | **25.3** |
 
 Two readings, in order:
 
@@ -354,10 +353,16 @@ Two readings, in order:
 14.8 vs 15.3 tok/s. A ~3% difference. Neither engine is "better" — llama.cpp's value
 is that it runs models MLX cannot.
 
-**1-bit cost nothing measurable here.** Identical score at **4.2× smaller and 2.4×
-faster**. Not merely the same total — the *same three tasks passed and the same two
-failed*, and it failed the no-op trap the same way its 4-bit self did. That failure
-mode survived 4× compression intact.
+**Compression cost nothing measurable here.** Four builds, two runtimes, a 4.2× size
+range — **all 3/5**. Not merely the same total: the *same three tasks passed and the
+same two failed* in every single build, and each failed the no-op trap the same way.
+That failure mode survived 4× compression intact.
+
+**Speed plateaus before size does.** Ternary and 1-bit are within 1% of each other
+(25.0 vs 25.3 tok/s) despite 1-bit being half the size. Memory keeps falling, throughput
+does not — past a point the bottleneck moves off memory bandwidth onto compute. If you
+are compressing to fit a memory budget, 1-bit buys you room; if you are compressing for
+speed, ternary already got you there.
 
 This also reframes result #3 above. Testing 5-bit against 6-bit produced byte-identical
 output and taught us nothing; the interesting quantization territory was far more
@@ -367,17 +372,21 @@ aggressive than we were looking.
 survived *these* edits. It is not evidence that 1-bit is lossless, and I would expect
 differences to appear on harder or longer tasks.
 
-**A trap for anyone repeating this:** `Ternary-Bonsai-27B-Q2_0.gguf` will not load in
+**Pick the right ternary file.** `Ternary-Bonsai-27B-Q2_0.gguf` will not load in
 upstream llama.cpp —
 
 ```
 tensor 'output_norm.weight' has offset 337715200, expected 357580800
 ```
 
-Reproduced on a freshly downloaded, size-verified file, so it is not corruption.
-Bonsai's `Q2_0` has a different block layout from upstream's `Q2_0` **of the same
-name**, and needs their patched build. A quant type appearing in
-`llama-quantize --help` does not mean an arbitrary file claiming that type will load.
+That reproduces on a freshly downloaded, size-verified file, so it is not corruption.
+Bonsai ships two ternary layouts: plain `Q2_0` is **group-128 and fork-only**, while
+`Q2_0_g64` is **group-64 and mainline-compatible**. The `_g64` file loads on stock
+Homebrew llama.cpp without any patched build — that is the row in the table above.
+
+The general lesson: a quant type appearing in `llama-quantize --help` does not mean an
+arbitrary file *claiming* that type will load. `Q1_0` is merged upstream and works
+anywhere; same-named types can still differ in block layout.
 
 ## 12. Speculative decoding: works, but is not output-identical
 

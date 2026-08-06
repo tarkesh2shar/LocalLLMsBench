@@ -38,7 +38,10 @@ MODELS = [
     # (label, gguf path, extra llama-server args)
     ("qwen3.6-27b-gguf-q4_0", GGUF / "Qwen3.6-27B-Q4_0.gguf", []),
     ("bonsai-27b-1bit-q1_0", BONSAI_Q1, []),
-    ("ternary-bonsai-27b-q2_0", GGUF / "Ternary-Bonsai-27B-Q2_0.gguf", []),
+    # NB: use the _g64 (group-64) build. Bonsai's plain Q2_0 is group-128 and
+    # loads only on their forked llama.cpp binaries; Q2_0_g64 is the
+    # mainline-compatible layout. Q1_0 is merged upstream and works either way.
+    ("ternary-bonsai-27b-q2_g64", GGUF / "Ternary-Bonsai-27B-Q2_g64.gguf", []),
 ]
 
 CANARY_PROMPT = ("Count from 1 to 20. Output only the numbers separated by commas, "
