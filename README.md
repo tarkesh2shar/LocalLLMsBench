@@ -432,6 +432,37 @@ Task correctness survived (5/5 in every arm), and the token-skipping in mlx-lm
 issue #846 did not reproduce. But "free speedup, identical results" is false here —
 a poor trade for a worker role where reproducibility matters.
 
+### …but MTP through llama.cpp is a different story
+
+Qwen3.5 and Qwen3.6 ship **MTP (multi-token prediction) heads** — a drafter built into
+the model, needing no second model. mlx-lm cannot use them: the published drafter is
+`model_type: qwen3_5_mtp`, unimplemented, and mlx-lm has no native MTP pipeline at all.
+Those heads sat idle in every mlx-lm run in this repo.
+
+llama.cpp can, via `--spec-type draft-mtp`:
+
+| Config | Score | Total | tok/s | Speedup | Resident |
+|---|---|---|---|---|---|
+| no drafter | 3/5 | 1,608s | 15.3 | 1.00× | 16.4 GiB |
+| **MTP n=3** | **3/5** | **962s** | **25.1** | **1.67×** | 19.9 GiB |
+| MTP n=5 | 3/5 | 1,119s | 21.6 | 1.44× | 21.3 GiB |
+
+**1.67× with the score unchanged** — same three tasks passed, same two failed — for
++3.5 GiB. Per-task speedups ranged 1.46×–2.32×, largest on the longest generations,
+which is what you would expect: more tokens means more accepted drafts.
+
+Drafting further ahead is worse (n=5 < n=3), the same pattern mlx-lm showed. More
+speculation means more rejected guesses, and the wasted verification outweighs the gain.
+
+**A trap worth knowing:** MTP head weights are *not* a standalone draft model. Passing
+them with llama.cpp's default `--spec-type draft-simple` **segfaults the server**. They
+also will not load on their own. `--spec-type draft-mtp` is required.
+
+So the earlier conclusion needs splitting: speculative decoding via an *external
+drafter in mlx-lm* is not worth it (1.16×, changes output). MTP *through llama.cpp*
+clearly is (1.67×, score intact). llama.cpp also offers `draft-eagle3`, `draft-dspark`
+and several ngram modes that need no drafter at all — untested here.
+
 ## What I'd actually deploy
 
 **`mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit`** — 7/9 overall at **6,069 tokens

@@ -40,7 +40,8 @@ for _s in (signal.SIGINT, signal.SIGTERM):
 
 
 def start_server(gguf_path, port, extra_args=None, ctx=16384, draft_gguf=None,
-                 n_gpu_layers=-1):
+                 n_gpu_layers=-1, draft_n=3,
+                 spec_type="draft-mtp"):
     """Launch llama-server on a GGUF file.
 
     n_gpu_layers=-1 offloads everything to Metal.
@@ -59,7 +60,11 @@ def start_server(gguf_path, port, extra_args=None, ctx=16384, draft_gguf=None,
            "--port", str(port), "-c", str(ctx), "-ngl", str(n_gpu_layers),
            "--no-webui"]
     if draft_gguf:
-        cmd += ["-md", str(draft_gguf), "--draft-max", "3", "--draft-min", "1"]
+        # MTP head weights are NOT a standalone draft model -- passing them with
+        # the default --spec-type draft-simple segfaults llama-server. MTP needs
+        # its own speculative type.
+        cmd += ["-md", str(draft_gguf), "--spec-type", spec_type,
+                "--spec-draft-n-max", str(draft_n), "-ngld", "99"]
     cmd += list(extra_args or [])
 
     log(f"start: {' '.join(cmd)}")

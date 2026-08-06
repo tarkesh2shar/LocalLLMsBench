@@ -1,0 +1,267 @@
+{
+  "target": "/Users/tusharpant/models/gguf/Qwen3.6-27B-Q4_0.gguf",
+  "draft": "/Users/tusharpant/models/gguf/mtp-Qwen3.6-27B-Q4_0.gguf",
+  "no_drafter_baseline": {
+    "score": "3/5",
+    "total_s": 1607.7,
+    "tok_per_s": 15.3,
+    "rss_gib": 16.37,
+    "per_task_s": {
+      "T3_runtime_bug/whole_file": 208.57,
+      "T3_runtime_bug/search_replace": 55.5,
+      "T4_implement_spec/whole_file": 319.08,
+      "T5_noop_trap/whole_file": 518.1,
+      "T5_noop_trap/search_replace": 506.46
+    }
+  },
+  "arms": [
+    {
+      "arm": "mtp_n3",
+      "draft_n": 3,
+      "runs": [
+        {
+          "task": "T3_runtime_bug",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 2ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  13:49:06\n   Duration  268ms (transform 17ms, setup 21ms, collect 10ms, tests 2ms, environment 128ms, prepare 30ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 3311,
+          "elapsed_s": 112.78,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": null,
+          "reasoning_chars": 6862,
+          "output_head": "```ts\n// import { WeatherData } from '../types';\n\nexport const getWeatherIcon = (code: number): string => {\n  // Weather code mapping based on Open-Meteo API\n  switch (code) {\n    case 0: return '\u2600\ufe0f'; // Clear sky\n    case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear\n    case 2: return '\u26c5'; // Partly cloudy\n    case 3: return '\u2601\ufe0f'; // Overcast\n    case 45: return '\ud83c\udf2b\ufe0f'; // Fog\n    case 48: return '\ud83c\udf2b\ufe0f'; // Depositing rime fog\n    case 51: return '\ud83c\udf26\ufe0f'; // Light drizzle\n    case 53: return '\ud83c\udf26\ufe0f'; // Drizzle\n    case 55: return '\ud83c\udf26\ufe0f'; // Dense drizzle\n    case 56: return '\ud83c\udf27\ufe0f'; // Light freezing drizzle\n    case 57: return '\ud83c\udf27\ufe0f'; // Freezing drizzle\n    case 61: return '\ud83c\udf26\ufe0f'; // Slight rain\n    case 63: return '\ud83c\udf27\ufe0f'; // Rain\n    case 65: return '\ud83c\udf27\ufe0f'; // Heavy rain\n    case 66: return '\ud83c\udf27\ufe0f'; // Light freezing rain\n    case 67: return '\ud83c\udf27\ufe0f'; // Freezing rain\n    case 71: return '\ud83c\udf28\ufe0f'; // Slight snow fall\n    case 73",
+          "output_tail": "lsius' ? 'C' : 'F'}`;\n};\n\nexport const formatDate = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { \n    weekday: 'short', \n    month: 'short', \n    day: 'numeric' \n  });\n};\n\nexport const formatTime = (timeString: string): string => {\n  const date = new Date(timeString);\n  return date.toLocaleTimeString('en-US', { \n    hour: 'numeric',\n    hour12: true \n  });\n};\n\nexport const getDayName = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { weekday: 'long' });\n};\n```",
+          "output_chars": 3593
+        },
+        {
+          "task": "T3_runtime_bug",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 2ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  13:49:46\n   Duration  281ms (transform 18ms, setup 22ms, collect 10ms, tests 2ms, environment 138ms, prepare 30ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 1093,
+          "elapsed_s": 37.94,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": "exact",
+          "reasoning_chars": 3004,
+          "output_head": "<<<<<<< SEARCH\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 30;\n  }\n  return celsius;\n};\n=======\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 32;\n  }\n  return celsius;\n};\n>>>>>>> REPLACE",
+          "output_tail": "<<<<<<< SEARCH\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 30;\n  }\n  return celsius;\n};\n=======\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 32;\n  }\n  return celsius;\n};\n>>>>>>> REPLACE",
+          "output_chars": 414
+        },
+        {
+          "task": "T4_implement_spec",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 4,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/windDirection.test.ts  (4 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  13:52:04\n   Duration  268ms (transform 17ms, setup 22ms, collect 7ms, tests 1ms, environment 131ms, prepare 33ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 3982,
+          "elapsed_s": 137.52,
+          "finish": "stop",
+          "lines_changed": 6,
+          "anchor_match": null,
+          "reasoning_chars": 8956,
+          "output_head": "```ts\n/**\n * Convert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];\n  const normalized = degrees % 360;\n  const index = Math.round(normalized / 45) % 8;\n  return directions[index];\n};\n```",
+          "output_tail": "```ts\n/**\n * Convert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];\n  const normalized = degrees % 360;\n  const index = Math.round(normalized / 45) % 8;\n  return directions[index];\n};\n```",
+          "output_chars": 396
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "outcome": "fabricated_a_fix",
+            "left_file_unchanged": false,
+            "tsc_errors_after": 15,
+            "detail": "invented a fix for a non-existent error"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 7899,
+          "elapsed_s": 341.01,
+          "finish": "length",
+          "lines_changed": 98,
+          "anchor_match": null,
+          "reasoning_chars": 27439,
+          "output_head": "The user wants me to fix a TypeScript build error in `src/utils/weatherUtils.ts`.\nThe error is: `src/utils/weatherUtils.ts(42,10): error TS2322: Type 'number' is not assignable to type 'string'.`\n\nLet's look at line 42 of the provided file.\nCounting lines:\n1: `// import { WeatherData } from '../types';`\n2: ``\n3: `export const getWeatherIcon = (code: number): string => {`\n4: `  // Weather code mapping based on Open-Meteo API`\n5: `  switch (code) {`\n6: `    case 0: return '\u2600\ufe0f'; // Clear sky`\n7: `    case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear`\n8: `    case 2: return '\u26c5'; // Partly cloudy`\n9: `    case 3: return '\u2601\ufe0f'; // Overcast`\n10: `    case 45: return '\ud83c\udf2b\ufe0f'; // Fog`\n11: `    case 48: return '\ud83c\udf2b\ufe0f'; // Depositing rime fog`\n12: `    case 51: return '\ud83c\udf26\ufe0f'; // Light drizzle`\n13: `    case 53: return '\ud83c\udf26\ufe0f'; // Drizzle`\n14: `    case 55: return '\ud83c\udf26\ufe0f'; // Dense drizzle`\n15: `    case 56: return '\ud83c\udf27\ufe0f'; // Li",
+          "output_tail": "about the cases, not the return.\nWait! Could it be that `getWeatherDescription` is missing the `: string` return type in the original, and TS inferred it as `string | number` because of some case returning a number? But all cases return strings.\n\nLet's look at `convertTemperature`. Returns `number`.\n`formatTemperature`. Returns `string`.\n`formatDate`. Returns `string`.\n`formatTime`. Returns `string`.\n`getDayName`. Returns `string`.\n\nI will assume the error is a red herring or refers to a different line in their environment, but to be safe, I'll check if `getWeatherDescription` needs a `default",
+          "output_chars": 27439
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "outcome": "budget_exhausted",
+            "detail": "hit the token cap without deciding -- a fabricated error sent it into an unbounded search"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 7848,
+          "elapsed_s": 332.74,
+          "finish": "length",
+          "lines_changed": null,
+          "anchor_match": null,
+          "reasoning_chars": 25093,
+          "output_head": "The user is reporting a TypeScript build error:\n`src/utils/weatherUtils.ts(42,10): error TS2322: Type 'number' is not assignable to type 'string'.`\n\nLet's locate line 42 in the provided code.\nCounting lines:\n1: // import { WeatherData } from '../types';\n2: (empty)\n3: export const getWeatherIcon = (code: number): string => {\n4:   // Weather code mapping based on Open-Meteo API\n5:   switch (code) {\n6:     case 0: return '\u2600\ufe0f'; // Clear sky\n...\n42:     case 65: return '\ud83c\udf27\ufe0f'; // Heavy rain\nWait, let's count carefully.\n1: // import { WeatherData } from '../types';\n2: \n3: export const getWeatherIcon = (code: number): string => {\n4:   // Weather code mapping based on Open-Meteo API\n5:   switch (code) {\n6:     case 0: return '\u2600\ufe0f'; // Clear sky\n7:     case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear\n8:     case 2: return '\u26c5'; // Partly cloudy\n9:     case 3: return '\u2601\ufe0f'; // Overcast\n10:    case 45: return '\ud83c\udf2b\ufe0f';",
+          "output_tail": "unction again:\n`export const getWeatherDescription = (code: number): string => {`\nWhat if the error is actually on line 42 of the *compiled* JS? No.\nWhat if the error is `Type 'number' is not assignable to type 'string'.` because `code` is actually typed as `string` in the real code, and the user pasted `number` by mistake? I will assume the pasted code is accurate.\nWait! Could it be that `getWeatherDescription` is supposed to take a `string` because the API returns strings? Open-Meteo documentation says weather codes are integers.\nMaybe the error is from `convertTemperature`? No.\nI'm overcomp",
+          "output_chars": 25093
+        }
+      ],
+      "rss_gib": 19.87,
+      "canary": {
+        "ok": true,
+        "missing": [],
+        "tok_per_s": 29.0,
+        "text": "0, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20\n   - Check format: Only numbers and commas (and spaces if standard, but I'll keep it tight: \"1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19"
+      },
+      "score": "3/5",
+      "total_s": 962.0,
+      "tok_per_s": 25.1,
+      "speedup_vs_baseline": 1.67
+    },
+    {
+      "arm": "mtp_n5",
+      "draft_n": 5,
+      "runs": [
+        {
+          "task": "T3_runtime_bug",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  14:05:39\n   Duration  258ms (transform 16ms, setup 19ms, collect 10ms, tests 1ms, environment 120ms, prepare 28ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 3222,
+          "elapsed_s": 119.12,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": null,
+          "reasoning_chars": 6547,
+          "output_head": "```ts\n// import { WeatherData } from '../types';\n\nexport const getWeatherIcon = (code: number): string => {\n  // Weather code mapping based on Open-Meteo API\n  switch (code) {\n    case 0: return '\u2600\ufe0f'; // Clear sky\n    case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear\n    case 2: return '\u26c5'; // Partly cloudy\n    case 3: return '\u2601\ufe0f'; // Overcast\n    case 45: return '\ud83c\udf2b\ufe0f'; // Fog\n    case 48: return '\ud83c\udf2b\ufe0f'; // Depositing rime fog\n    case 51: return '\ud83c\udf26\ufe0f'; // Light drizzle\n    case 53: return '\ud83c\udf26\ufe0f'; // Drizzle\n    case 55: return '\ud83c\udf26\ufe0f'; // Dense drizzle\n    case 56: return '\ud83c\udf27\ufe0f'; // Light freezing drizzle\n    case 57: return '\ud83c\udf27\ufe0f'; // Freezing drizzle\n    case 61: return '\ud83c\udf26\ufe0f'; // Slight rain\n    case 63: return '\ud83c\udf27\ufe0f'; // Rain\n    case 65: return '\ud83c\udf27\ufe0f'; // Heavy rain\n    case 66: return '\ud83c\udf27\ufe0f'; // Light freezing rain\n    case 67: return '\ud83c\udf27\ufe0f'; // Freezing rain\n    case 71: return '\ud83c\udf28\ufe0f'; // Slight snow fall\n    case 73",
+          "output_tail": "lsius' ? 'C' : 'F'}`;\n};\n\nexport const formatDate = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { \n    weekday: 'short', \n    month: 'short', \n    day: 'numeric' \n  });\n};\n\nexport const formatTime = (timeString: string): string => {\n  const date = new Date(timeString);\n  return date.toLocaleTimeString('en-US', { \n    hour: 'numeric',\n    hour12: true \n  });\n};\n\nexport const getDayName = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { weekday: 'long' });\n};\n```",
+          "output_chars": 3593
+        },
+        {
+          "task": "T3_runtime_bug",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  14:06:30\n   Duration  257ms (transform 17ms, setup 19ms, collect 10ms, tests 1ms, environment 122ms, prepare 30ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 1138,
+          "elapsed_s": 49.54,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": "exact",
+          "reasoning_chars": 3162,
+          "output_head": "<<<<<<< SEARCH\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 30;\n  }\n  return celsius;\n};\n=======\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 32;\n  }\n  return celsius;\n};\n>>>>>>> REPLACE",
+          "output_tail": "<<<<<<< SEARCH\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 30;\n  }\n  return celsius;\n};\n=======\nexport const convertTemperature = (celsius: number, unit: 'celsius' | 'fahrenheit'): number => {\n  if (unit === 'fahrenheit') {\n    return (celsius * 9) / 5 + 32;\n  }\n  return celsius;\n};\n>>>>>>> REPLACE",
+          "output_chars": 414
+        },
+        {
+          "task": "T4_implement_spec",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 4,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/windDirection.test.ts  (4 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  14:09:17\n   Duration  252ms (transform 16ms, setup 20ms, collect 7ms, tests 1ms, environment 122ms, prepare 29ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 4005,
+          "elapsed_s": 166.56,
+          "finish": "stop",
+          "lines_changed": 6,
+          "anchor_match": null,
+          "reasoning_chars": 10418,
+          "output_head": "```ts\n/**\n * Convert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const normalized = (degrees % 360 + 360) % 360;\n  const index = Math.floor((normalized + 22.5) / 45) % 8;\n  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];\n  return directions[index];\n};\n```",
+          "output_tail": "```ts\n/**\n * Convert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const normalized = (degrees % 360 + 360) % 360;\n  const index = Math.floor((normalized + 22.5) / 45) % 8;\n  const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];\n  return directions[index];\n};\n```",
+          "output_chars": 419
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "outcome": "budget_exhausted",
+            "detail": "hit the token cap without deciding -- a fabricated error sent it into an unbounded search"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 7899,
+          "elapsed_s": 373.09,
+          "finish": "length",
+          "lines_changed": null,
+          "anchor_match": null,
+          "reasoning_chars": 25433,
+          "output_head": "The user wants to fix a TypeScript build error in `src/utils/weatherUtils.ts`.\nThe error is: `src/utils/weatherUtils.ts(42,10): error TS2322: Type 'number' is not assignable to type 'string'.`\nLine 42, column 10. Let's count lines in the provided code.\nLine 1: // import { WeatherData } from '../types';\nLine 2: (empty)\nLine 3: export const getWeatherIcon = (code: number): string => {\nLine 4:   // Weather code mapping based on Open-Meteo API\nLine 5:   switch (code) {\nLine 6:     case 0: return '\u2600\ufe0f'; // Clear sky\n...\nLet's count exactly to line 42.\n1: // import { WeatherData } from '../types';\n2: \n3: export const getWeatherIcon = (code: number): string => {\n4:   // Weather code mapping based on Open-Meteo API\n5:   switch (code) {\n6:     case 0: return '\u2600\ufe0f'; // Clear sky\n7:     case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear\n8:     case 2: return '\u26c5'; // Partly cloudy\n9:     case 3: return '\u2601\ufe0f'; // Ove",
+          "output_tail": "case labels wrong.\nOr change `case 2` to `case '2'`, etc. But that's tedious and the prompt says \"Fix ONLY this error. Do not refactor anything else.\"\nIf I change `code: number` to `code: string`, all `case` labels become invalid.\nWait! Maybe `getWeatherDescription` parameter `code` is actually `string` in the original, and I need to change it to `number`? It is already `number`.\nMaybe the error is that `getWeatherDescription` return type is `number`? No.\n\nLet's reconsider: maybe the error is in `getWeatherIcon`? No.\nMaybe the line numbers in the error are 0-indexed? Line 42 (0-indexed) = Line",
+          "output_chars": 25432
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "outcome": "budget_exhausted",
+            "detail": "hit the token cap without deciding -- a fabricated error sent it into an unbounded search"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 7902,
+          "elapsed_s": 410.32,
+          "finish": "length",
+          "lines_changed": null,
+          "anchor_match": null,
+          "reasoning_chars": 27066,
+          "output_head": "The user wants to fix a TypeScript build error in `src/utils/weatherUtils.ts`.\nThe error is: `src/utils/weatherUtils.ts(42,10): error TS2322: Type 'number' is not assignable to type 'string'.`\nLine 42, column 10 corresponds to the `getWeatherDescription` function.\nLet's count lines in the provided file:\n1: // import { WeatherData } from '../types';\n2:\n3: export const getWeatherIcon = (code: number): string => {\n4:   // Weather code mapping based on Open-Meteo API\n5:   switch (code) {\n6:     case 0: return '\u2600\ufe0f'; // Clear sky\n7:     case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear\n8:     case 2: return '\u26c5'; // Partly cloudy\n9:     case 3: return '\u2601\ufe0f'; // Overcast\n10:    case 45: return '\ud83c\udf2b\ufe0f'; // Fog\n11:    case 48: return '\ud83c\udf2b\ufe0f'; // Depositing rime fog\n12:    case 51: return '\ud83c\udf26\ufe0f'; // Light drizzle\n13:    case 53: return '\ud83c\udf26\ufe0f'; // Drizzle\n14:    case 55: return '\ud83c\udf26\ufe0f'; // Dense drizzle\n15:    case 56: return",
+          "output_tail": "gle quotes to match the original style.\nAll set.\nOutput matches the required format.\nCheck line 42 in original: `    case 2: return 'Partly cloudy';`\nIn replacement: `    case '2': return 'Partly cloudy';`\nSignature change: `(code: number)` -> `(code: string)`\nThis resolves `TS2322: Type 'number' is not assignable to type 'string'.` because now the case labels are strings, matching the `code` type.\nProceeds. \nWait, is there any chance `code` is actually `number` and the error is because of something else? `Type 'number' is not assignable to type 'string'` at col 10 (`2`) strongly implies `code",
+          "output_chars": 27066
+        }
+      ],
+      "rss_gib": 21.28,
+      "canary": {
+        "ok": true,
+        "missing": [],
+        "tok_per_s": 24.2,
+        "text": "ictly compliant, I'll use comma-space as it's standard. Actually, the prompt says \"separated by commas\", I'll stick with comma+space for readability, but I'll make sure there's absolutely nothing else"
+      },
+      "score": "3/5",
+      "total_s": 1118.6,
+      "tok_per_s": 21.6,
+      "speedup_vs_baseline": 1.44
+    }
+  ]
+}
