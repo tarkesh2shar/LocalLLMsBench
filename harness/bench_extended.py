@@ -40,7 +40,60 @@ from pathlib import Path
 
 import mlx_server as mx
 from bench import (MODELS, MAX_TOKENS, WHOLE_FILE, SEARCH_REPLACE,
-                   strip_reasoning, extract_block, apply_search_replace)
+                   strip_reasoning, extract_block)
+
+
+def apply_search_replace(original, out):
+    """Apply one SEARCH/REPLACE block, the way a real diff tool would.
+
+    Returns (new_source, error, how) where `how` is one of:
+      "exact"   the SEARCH text matched byte-for-byte
+      "lenient" it only matched after normalising LEADING indentation
+
+    Why leniency: gpt-oss-20b produced a semantically perfect fix whose anchor
+    was indented 4 spaces where the file used 2. Under strict matching that
+    scores identical to a model that dropped a line of source -- but they are
+    completely different failures, and every real applier (Aider, Claude Code)
+    normalises indentation. Scoring strictly would have mislabelled a working
+    model as incapable of anchor edits.
+    """
+    m = re.search(r"<{5,}\s*SEARCH\s*\n(.*?)\n={5,}\s*\n(.*?)\n>{5,}\s*REPLACE",
+                  out, re.S)
+    if not m:
+        return None, "no valid SEARCH/REPLACE block", None
+    search, repl = m.group(1), m.group(2)
+
+    if search in original:
+        return original.replace(search, repl, 1), None, "exact"
+
+    # trailing whitespace only
+    s2 = "\n".join(l.rstrip() for l in search.split("\n"))
+    o2 = "\n".join(l.rstrip() for l in original.split("\n"))
+    if s2 in o2:
+        r2 = "\n".join(l.rstrip() for l in repl.split("\n"))
+        return o2.replace(s2, r2, 1), None, "exact"
+
+    # leading indentation: match on stripped lines, then re-indent the
+    # replacement to the indentation the file actually uses
+    def strip_lines(t):
+        return [l.strip() for l in t.strip("\n").split("\n")]
+
+    s_lines, o_lines = strip_lines(search), original.split("\n")
+    o_stripped = [l.strip() for l in o_lines]
+    n = len(s_lines)
+    for i in range(len(o_stripped) - n + 1):
+        if o_stripped[i:i + n] == s_lines:
+            indent = re.match(r"\s*", o_lines[i]).group(0)
+            r_lines = strip_lines(repl)
+            # preserve relative indentation within the replacement block
+            raw = repl.strip("\n").split("\n")
+            base = min((len(x) - len(x.lstrip()) for x in raw if x.strip()),
+                       default=0)
+            new_block = [indent + x[base:] if x.strip() else "" for x in raw]
+            merged = o_lines[:i] + new_block + o_lines[i + n:]
+            return "\n".join(merged), None, "lenient"
+
+    return None, "SEARCH text not found (model did not reproduce the source)", None
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURE = ROOT / "fixture"
@@ -211,21 +264,39 @@ def prepare(task):
 
 # ---------------------------------------------------------------- grading
 
-def grade(task, new_src, applied, err):
+def grade(task, new_src, applied, err, declined=False, finish=None):
+    """Three outcomes, not two.
+
+    A no-op trap has a genuine INCONCLUSIVE case: a model that exhausts its
+    token budget mid-thought produced no edit, but that is not the same as
+    correctly declining. Scoring "no edit" as a pass would credit a model for
+    running out of road.
+    """
     if not applied:
-        # T5 is the exception: declining to edit IS the correct answer
         if task["kind"] == "noop":
-            return {"passed": True, "declined": True, "detail": err}
-        return {"passed": False, "reason": err}
+            # budget exhaustion takes precedence: a truncated response has not
+            # decided anything, whatever phrases appear inside it
+            if finish == "length":
+                return {"passed": False, "outcome": "budget_exhausted",
+                        "detail": "hit the token cap without deciding -- a "
+                                  "fabricated error sent it into an unbounded search"}
+            if declined:
+                return {"passed": True, "outcome": "correctly_declined",
+                        "detail": "explicitly reported no change needed"}
+            return {"passed": False, "outcome": "unparseable",
+                    "detail": err}
+        return {"passed": False, "outcome": "no_edit", "reason": err}
 
     if task["kind"] == "noop":
         orig = (FIXTURE / (task["file"] + ".orig")).read_text()
         unchanged = new_src.strip() == orig.strip()
         errs = tsc_errors()
         return {"passed": bool(unchanged and len(errs) <= 2),
+                "outcome": "no_change_made" if unchanged else "fabricated_a_fix",
                 "left_file_unchanged": unchanged,
                 "tsc_errors_after": len(errs),
-                "detail": "invented a fix for a non-existent error" if not unchanged else "correctly made no change"}
+                "detail": ("invented a fix for a non-existent error"
+                           if not unchanged else "correctly made no change")}
 
     if task["kind"] == "vitest":
         passed, failed, tail = vitest(task["test_file"])
@@ -259,15 +330,23 @@ def run_task(port, task, arm):
                 "elapsed_s": r.get("elapsed")}
 
     text = strip_reasoning(r["text"]) or strip_reasoning(r["reasoning"])
-    declined = bool(re.search(r"\bNO CHANGE NEEDED\b", text, re.I))
 
+    # A decline only counts if the model FINISHED and ended by declining.
+    # Matching the phrase anywhere is wrong: a model that rambles for 7k tokens
+    # quoting the instruction back ("reply with exactly: NO CHANGE NEEDED") and
+    # then hits the cap has not decided anything. Require finish != "length"
+    # and the phrase near the end of the response.
+    declined = (r.get("finish") != "length"
+                and bool(re.search(r"NO CHANGE NEEDED", text[-300:], re.I)))
+
+    how = None
     if declined:
         new, err = None, "model replied NO CHANGE NEEDED"
     elif arm == "whole_file":
         new = extract_block(text)
         err = None if new else "no fenced code block in output"
     else:
-        new, err = apply_search_replace(src, text)
+        new, err, how = apply_search_replace(src, text)
 
     changed = None
     if new:
@@ -276,7 +355,7 @@ def run_task(port, task, arm):
             src.splitlines(), new.splitlines(), n=0)
             if d.startswith(("+", "-")) and not d.startswith(("+++", "---")))
 
-    g = grade(task, new, bool(new), err)
+    g = grade(task, new, bool(new), err, declined=declined, finish=r.get("finish"))
     restore_all()
     return {
         "task": task["id"], "arm": arm, "passed": g["passed"], "grade": g,
@@ -284,8 +363,14 @@ def run_task(port, task, arm):
         "completion_tokens": r["usage"].get("completion_tokens"),
         "elapsed_s": r["elapsed"], "finish": r["finish"],
         "lines_changed": changed,
+        "anchor_match": how,          # "exact" | "lenient" | None
         "reasoning_chars": len(r["reasoning"]),
-        "output_preview": text[:250],
+        "output_head": text[:900],
+        # the verdict on a no-op trap depends on how the response ENDS, so the
+        # tail must be stored too -- storing only the head makes the decision
+        # unauditable after the fact
+        "output_tail": text[-600:],
+        "output_chars": len(text),
     }
 
 
@@ -360,7 +445,13 @@ def main():
     if len(base) != 2:
         sys.exit("fixture not pristine (expected 2 baseline errors)")
 
-    only = sys.argv[1] if len(sys.argv) > 1 else None
+    args = [a for a in sys.argv[1:] if not a.startswith("--task=")]
+    only = args[0] if args else None
+    task_filter = next((a.split("=", 1)[1] for a in sys.argv[1:]
+                        if a.startswith("--task=")), None)
+    if task_filter:
+        globals()["TASKS"] = [t for t in TASKS if task_filter.lower() in t["id"].lower()]
+        print(f"task filter: {[t['id'] for t in TASKS]}", flush=True)
     _partial["started"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
     for model, port, args in MODELS:

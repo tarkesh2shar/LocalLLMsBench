@@ -238,20 +238,96 @@ for it to finish reasoning *and* answer.
 
 ---
 
+## 8. Then I added three more tasks, and the ranking inverted
+
+Everything above came from **two tasks**. I flagged that as a limitation, published a
+recommendation anyway, and then tested whether the recommendation survived three more
+task kinds:
+
+- **T3 runtime bug** — an arithmetic bug breaks an existing test. Graded by vitest.
+- **T4 implement from spec** — write a function against a provided spec test.
+- **T5 no-op trap** — a clean file and a **fabricated** error message. The correct
+  answer is to change nothing.
+
+| Model | 2-task | 5-task | **total** | tokens | seconds |
+|---|---|---|---|---|---|
+| Seed-OSS-36B | 3/4 | 5/5 | **8/9** | 20,161 | 1,740 |
+| **Qwen3-Coder-30B 5-bit** | 2/4 | **5/5** | **7/9** | **6,069** | **99** |
+| Qwen3.6-35B-A3B | 4/4 | 3/5 | 7/9 | 32,610 | 524 |
+| Qwen3.6-27B | 4/4 | 3/5 | 7/9 | 34,507 | 2,208 |
+| gpt-oss-20b | 3/4 | 3/5 | 6/9 | 21,869 | 330 |
+| Devstral-24B | 1/4 | 4/5 | 5/9 | 5,549 | 331 |
+| Qwen3.5-35B | 2/4 | 3/5 | 5/9 | 38,473 | 589 |
+| granite-4.0-h-small | 2/4 | 2/5 | 4/9 | 3,727 | 116 |
+
+**The model I ranked worst won the second round 5/5.** Qwen3-Coder-30B now ties for
+second overall while using **5.4× fewer tokens and 5.3× less time** than Qwen3.6-35B
+at the same score. Devstral went from last (1/4) to 4/5.
+
+Two tasks were not enough, and I would have shipped the wrong recommendation. That is
+the most useful thing in this repo.
+
+## 9. The no-op trap broke almost everything
+
+Give a model a clean file and an error that does not exist. Only **2 of 8** handled it:
+
+| Outcome | Runs | What it means |
+|---|---|---|
+| `budget_exhausted` | 7 | searched until the token cap, produced nothing |
+| `fabricated_a_fix` | 4 | **invented an edit for a non-existent error** |
+| `correctly_declined` / `no_change_made` | 5 | correct |
+
+Qwen3.6-27B spent **485 seconds per attempt** — 16 minutes across two runs — on an
+error that isn't there. Qwen3.5's whole-file attempt invented a fix *and* truncated
+the file, destroying 103 lines.
+
+Caught mid-reasoning, one model showed exactly what goes wrong:
+
+> ``11. `case 48: return '🌫️'` 12. `case 51: ...` 13. `case 53: ...``
+
+It was **numbering the lines of the file one by one**, trying to reach line 42. It ran
+out of budget before it got there.
+
+**Practical consequence:** a planner that hands a local worker a stale or mistaken
+error message does not get a fast "not found". It gets a multi-minute hang, or a
+confident edit to a file that had nothing wrong with it. Budget your workers and diff
+their output.
+
+## 10. Whole-file rewriting can destroy the file
+
+granite-4.0 answered a whole-file request with **57 tokens** — a fragment. Applied as
+"the complete file", it wiped ~100 lines. The same model fixed the same bug correctly
+via SEARCH/REPLACE in **41 tokens**.
+
+Same model, same task, same underlying error — catastrophically different blast
+radius. A truncated whole-file response *replaces* your file; a malformed anchor edit
+simply fails to apply.
+
+Across both rounds, **7 of 8 models** were cheaper, better-scoped, or both with
+SEARCH/REPLACE. The one exception was Qwen3.5, which used 1.7× *more* tokens on
+anchor edits.
+
 ## What I'd actually deploy
 
-**`mlx-community/Qwen3.6-35B-A3B-4bit`** — 4/4, 152s, cheapest KV of anything tested
-(20 KiB/token).
+**`mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit`** — 7/9 overall at **6,069 tokens
+and 99 seconds**, several times cheaper than anything scoring as well. It is also one
+of only two models that handled the no-op trap. Its one real weakness is resolving a
+shadowed identifier from a line number (task T1), which a planner can work around by
+sending a semantic anchor instead.
 
-**`mlx-community/gpt-oss-20b-MXFP4-Q8`** if headroom matters — 3/4, but its only
-failure is whole-file, which the diff-only rule forbids anyway. Under that strategy
-it's effectively 2/2, at 11.7 GiB and 67s. Apache 2.0.
+**`mlx-community/Seed-OSS-36B-Instruct-4bit`** scored highest at 8/9 — but took
+**1,740 seconds against Qwen3-Coder's 99**, 17.6× slower, with 256 KiB/token KV. Worth
+it only if correctness dominates everything else.
 
 ```bash
 MLX_MPI_LIBNAME=$(brew --prefix open-mpi)/lib/libmpi.dylib \
-mlx_lm.server --model mlx-community/Qwen3.6-35B-A3B-4bit \
-  --host 127.0.0.1 --port 8085 --prefill-step-size 512
+mlx_lm.server --model mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit \
+  --host 127.0.0.1 --port 8081 --prefill-step-size 512
 ```
+
+An earlier version of this README recommended Qwen3.6-35B-A3B on the strength of the
+two-task result. That recommendation was wrong, and it is left visible in the git
+history rather than quietly edited out.
 
 ---
 
@@ -262,13 +338,30 @@ dependencies beyond `mlx-lm` and `npx`.
 
 ## Limitations
 
-Two tasks, one repository, one attempt each, single-turn, no tool use. Greedy
-decoding makes it deterministic, not general. The 4/4-vs-3/4 ordering between the
-top two models is **not** something I'd defend on this evidence — that they both beat
-the older models is much better supported. Timings are one machine, one run.
+**Five tasks, one repository, one attempt each, single-turn, no tool use.** Greedy
+decoding makes runs deterministic — models reproduced their scores token-for-token
+across restarts — but deterministic is not the same as general.
+
+Going from two tasks to five *reordered the table*. Five may not be enough either.
+Treat the harness as the contribution and the ranking as provisional.
+
+Three grader bugs surfaced during this work, each of which inflated scores until it
+was fixed:
+
+1. "no edit produced" counted as correctly declining — so a model that exhausted its
+   token budget scored as a pass
+2. strict anchor matching scored *indentation drift* the same as *dropping a line of
+   source* — two completely different failures
+3. the decline phrase was matched anywhere in the output, so a model that quoted the
+   instruction back while rambling scored as having decided
+
+All three were found by reading raw model output, never by looking at the pass/fail
+column. On a trap task in particular, "produced nothing usable" and "correctly
+declined" are indistinguishable unless you check `finish_reason`. The superseded
+results are kept in `results/*-BADGRADER.json`.
 
 I have not tested multi-turn agentic loops, which is where these models are actually
-used, and where I'd expect the ranking to shift.
+used, and where I'd expect the ranking to shift again.
 
 ## License
 

@@ -5,3 +5,4 @@ results/server-logs/
 results/watchdog.log
 .DS_Store
 __pycache__/
+results/*.log
