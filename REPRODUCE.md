@@ -204,6 +204,31 @@ from what your llama.cpp build expects. `Ternary-Bonsai-27B-Q2_0.gguf` fails thi
 on upstream llama.cpp despite `Q2_0` appearing in `llama-quantize --help`. A quant name
 being listed does not mean an arbitrary file claiming that name will load.
 
+### Round 5: structured handoff (multi-turn agent loop)
+
+```bash
+python3 harness/e4_handoff.py
+```
+
+The only multi-turn experiment here. Builds a repo copy with 3 failing tests across 2
+files and runs two arms — a vague "another agent worked on this, continue" against an
+explicit brief naming the failing tests and the source files — measuring context at first
+edit, turns, and whether the tests end up green.
+
+**The model never gets a shell.** It has a fixed verb set (`LIST` / `READ` / `TEST` /
+`EDIT` / `DONE`) confined to the repo copy, with path-escape blocked and test files
+refused. Malformed commands return an error rather than crashing the loop.
+
+Two harness details that matter if you extend it:
+
+- **Parse every verb's argument from the first line only.** `cmd[4:]` swallows the whole
+  multi-line command into the filename — that produced a `File name too long` crash and,
+  before that, silent `LIST` failures.
+- **Use the non-streaming endpoint.** `mlx_lm.server` does not return `prompt_tokens` in
+  SSE chunks, and context-per-turn is the entire measurement — streaming reports 0.
+
+Results in `results/results-e4.json`, including the full per-turn command trace.
+
 ---
 
 ## Editing the benchmark

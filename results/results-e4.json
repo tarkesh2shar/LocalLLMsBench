@@ -1,0 +1,378 @@
+{
+  "model": "mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit",
+  "started": "2026-08-06 14:59:50",
+  "hypothesis": "structured handoff cuts context at first edit from ~70K to <10K",
+  "arms": [
+    {
+      "arm": "cold",
+      "turns": [
+        {
+          "turn": 1,
+          "ctx": 199,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 2,
+          "ctx": 273,
+          "kind": "read",
+          "cmd": "READ src/App.test.tsx",
+          "out_tokens": 7
+        },
+        {
+          "turn": 3,
+          "ctx": 567,
+          "kind": "read",
+          "cmd": "READ src/App.tsx",
+          "out_tokens": 6
+        },
+        {
+          "turn": 4,
+          "ctx": 1890,
+          "kind": "read",
+          "cmd": "READ src/components/TemperatureToggle.tsx",
+          "out_tokens": 9
+        },
+        {
+          "turn": 5,
+          "ctx": 2036,
+          "kind": "read",
+          "cmd": "READ src/utils/weatherUtils.ts",
+          "out_tokens": 7
+        },
+        {
+          "turn": 6,
+          "ctx": 3175,
+          "kind": "read",
+          "cmd": "READ src/utils/weatherUtils.test.ts",
+          "out_tokens": 8
+        },
+        {
+          "turn": 7,
+          "ctx": 3619,
+          "kind": "edit",
+          "cmd": "EDIT src/utils/weatherUtils.ts",
+          "out_tokens": 134
+        },
+        {
+          "turn": 8,
+          "ctx": 3769,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 9,
+          "ctx": 3804,
+          "kind": "read",
+          "cmd": "READ src/App.test.tsx",
+          "out_tokens": 7
+        },
+        {
+          "turn": 10,
+          "ctx": 4098,
+          "kind": "read",
+          "cmd": "READ src/components/TemperatureToggle.tsx",
+          "out_tokens": 9
+        },
+        {
+          "turn": 11,
+          "ctx": 4244,
+          "kind": "edit",
+          "cmd": "EDIT src/App.tsx",
+          "out_tokens": 79
+        },
+        {
+          "turn": 12,
+          "ctx": 4338,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 13,
+          "ctx": 4373,
+          "kind": "read",
+          "cmd": "READ src/App.test.tsx",
+          "out_tokens": 174
+        },
+        {
+          "turn": 14,
+          "ctx": 4834,
+          "kind": "error",
+          "cmd": "EDIT src/App.test.tsx",
+          "out_tokens": 174
+        },
+        {
+          "turn": 15,
+          "ctx": 5043,
+          "kind": "read",
+          "cmd": "READ src/App.tsx",
+          "out_tokens": 79
+        },
+        {
+          "turn": 16,
+          "ctx": 6439,
+          "kind": "read",
+          "cmd": "READ src/components/TemperatureToggle.tsx",
+          "out_tokens": 272
+        },
+        {
+          "turn": 17,
+          "ctx": 6848,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 18,
+          "ctx": 6883,
+          "kind": "read",
+          "cmd": "READ src/App.test.tsx",
+          "out_tokens": 174
+        },
+        {
+          "turn": 19,
+          "ctx": 7344,
+          "kind": "error",
+          "cmd": "EDIT src/App.test.tsx",
+          "out_tokens": 174
+        },
+        {
+          "turn": 20,
+          "ctx": 7553,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 21,
+          "ctx": 7588,
+          "kind": "read",
+          "cmd": "READ src/App.tsx",
+          "out_tokens": 79
+        },
+        {
+          "turn": 22,
+          "ctx": 8984,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 23,
+          "ctx": 9019,
+          "kind": "error",
+          "cmd": "I need to understand what the test is expecting vs what's happening. Let me chec",
+          "out_tokens": 234
+        },
+        {
+          "turn": 24,
+          "ctx": 9317,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 25,
+          "ctx": 9352,
+          "kind": "error",
+          "cmd": "Looking at the failing test more carefully, I see the issue. The test is checkin",
+          "out_tokens": 201
+        },
+        {
+          "turn": 26,
+          "ctx": 9617,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 27,
+          "ctx": 9652,
+          "kind": "error",
+          "cmd": "I need to understand what's happening. Let me check the current state of the app",
+          "out_tokens": 286
+        },
+        {
+          "turn": 28,
+          "ctx": 10002,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 29,
+          "ctx": 10037,
+          "kind": "error",
+          "cmd": "I see the issue now. Looking at the test more carefully:",
+          "out_tokens": 243
+        },
+        {
+          "turn": 30,
+          "ctx": 10344,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 31,
+          "ctx": 10379,
+          "kind": "error",
+          "cmd": "I need to actually fix the implementation. Let me look at the current state of t",
+          "out_tokens": 446
+        },
+        {
+          "turn": 32,
+          "ctx": 10889,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 33,
+          "ctx": 10924,
+          "kind": "error",
+          "cmd": "I see the issue now. The test is expecting the button to show \"\u00b0C\" after clickin",
+          "out_tokens": 511
+        },
+        {
+          "turn": 34,
+          "ctx": 11499,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 35,
+          "ctx": 11534,
+          "kind": "error",
+          "cmd": "I need to actually make a change to fix this. Let me look at the exact issue.",
+          "out_tokens": 623
+        },
+        {
+          "turn": 36,
+          "ctx": 12221,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 37,
+          "ctx": 12256,
+          "kind": "error",
+          "cmd": "I see the issue now. The test is expecting the button to show \"\u00b0C\" after clickin",
+          "out_tokens": 411
+        },
+        {
+          "turn": 38,
+          "ctx": 12731,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 39,
+          "ctx": 12766,
+          "kind": "error",
+          "cmd": "I need to actually make a change to fix this. Let me analyze what's happening.",
+          "out_tokens": 577
+        },
+        {
+          "turn": 40,
+          "ctx": 13407,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        }
+      ],
+      "start_failed": 3,
+      "first_edit_turn": 7,
+      "context_at_first_edit": 3619,
+      "tool_calls_before_first_edit": 6,
+      "peak_context": 13407,
+      "total_turns": 40,
+      "end_passed": 25,
+      "end_failed": 1,
+      "solved": false
+    },
+    {
+      "arm": "brief",
+      "turns": [
+        {
+          "turn": 1,
+          "ctx": 384,
+          "kind": "read",
+          "cmd": "READ src/utils/weatherUtils.ts",
+          "out_tokens": 11
+        },
+        {
+          "turn": 2,
+          "ctx": 1526,
+          "kind": "read",
+          "cmd": "READ src/components/TemperatureToggle.tsx",
+          "out_tokens": 12
+        },
+        {
+          "turn": 3,
+          "ctx": 1675,
+          "kind": "edit",
+          "cmd": "EDIT src/utils/weatherUtils.ts",
+          "out_tokens": 134
+        },
+        {
+          "turn": 4,
+          "ctx": 1825,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 5
+        },
+        {
+          "turn": 5,
+          "ctx": 1863,
+          "kind": "read",
+          "cmd": "READ src/App.test.tsx",
+          "out_tokens": 10
+        },
+        {
+          "turn": 6,
+          "ctx": 2160,
+          "kind": "read",
+          "cmd": "READ src/App.tsx",
+          "out_tokens": 9
+        },
+        {
+          "turn": 7,
+          "ctx": 3486,
+          "kind": "edit",
+          "cmd": "EDIT src/components/TemperatureToggle.tsx",
+          "out_tokens": 198
+        },
+        {
+          "turn": 8,
+          "ctx": 3702,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 5
+        },
+        {
+          "turn": 9,
+          "ctx": 3727,
+          "kind": "done",
+          "cmd": "DONE",
+          "out_tokens": 5
+        }
+      ],
+      "start_failed": 3,
+      "first_edit_turn": 3,
+      "context_at_first_edit": 1675,
+      "tool_calls_before_first_edit": 2,
+      "peak_context": 3727,
+      "total_turns": 9,
+      "end_passed": 26,
+      "end_failed": 0,
+      "solved": true
+    }
+  ]
+}

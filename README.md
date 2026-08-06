@@ -112,6 +112,9 @@ enclosing function**. That is the entire difference.
 **Practical takeaway:** don't hand a local model `error X at line N`. Hand it the
 enclosing function name and the verbatim snippet. Line numbers invite fabrication.
 
+§13 shows the same failure one level up — given failing tests and no file names, a model
+fabricates *which file to edit*. Localization is the weak point; editing is not.
+
 ---
 
 ## 2. Chain-of-thought made the coder model *worse*
@@ -501,6 +504,60 @@ for a problem better solved by picking a different model or a smaller build. It 
 impossible in mlx-lm — stay on MLX and the MTP heads in your Qwen3.5/3.6 downloads are
 dead weight.
 
+## 13. Structured handoff: the planner's job is localization, not context
+
+Everything above is single-shot. This one is a real multi-turn agent loop — the model
+gets a restricted verb set (`LIST` / `READ` / `TEST` / `EDIT` / `DONE`, no shell) against
+a repo with **3 failing tests across 2 files**, and has to get them green.
+
+Two arms, identical except for the opening message:
+
+- **cold** — "another agent worked on this, please continue, it was on test phase"
+- **brief** — failing test names, the two source files implicated, acceptance criteria
+
+| | Cold | **Brief** |
+|---|---|---|
+| **Solved** | **no** — 25 passed / 1 failed | **yes** — 26 / 0 |
+| First edit at turn | 7 | **3** |
+| Context at first edit | 3,619 | **1,675** |
+| Tool calls before first edit | 6 | **2** |
+| Peak context | 13,407 | **3,727** |
+| Total turns | **40** (hit the cap) | **9** |
+
+The brief arm's entire run:
+
+```
+1. READ weatherUtils.ts        2. READ TemperatureToggle.tsx
+3. EDIT weatherUtils.ts        4. TEST
+5. READ App.test.tsx           6. READ App.tsx
+7. EDIT TemperatureToggle.tsx  8. TEST      9. DONE
+```
+
+### The mechanism is not what I expected
+
+I set this up as a **context** experiment, and context did improve — 2.2× at first edit,
+3.6× at peak. But context was never the binding constraint.
+
+**The cold arm made its first edit at 3,619 tokens.** It had plenty of headroom. What it
+could not do was connect a failing test to the source file responsible: one bug had its
+failing test *in the same file* and it fixed that one immediately; the other bug lived in
+`TemperatureToggle.tsx` while the failing test was in `App.test.tsx`, and it spent 33
+further turns repeatedly trying to edit the **test file** instead of finding the source.
+
+The brief fixed that by *naming the file*. That is the active ingredient — not smaller
+context, but telling the worker which source file is responsible for which failure.
+
+This is the same finding as §1 one level up. In §1 a model fabricated the contents of
+"line 149" rather than locating code semantically. Here a model fabricated *which file to
+edit*. **Local models are unreliable at localization and reliable at editing once
+localized.** A planner that hands over "these tests fail, go" is handing over the part the
+model is worst at.
+
+**Caveats:** tool output here is truncated (READ 6K chars, TEST 1.2K), so absolute context
+is far below what a real shell-driven agent accumulates — the cold/brief *delta* is the
+measurement, not the absolute numbers. One run per arm, one repo, greedy decoding. The
+cold arm hit a 40-turn cap and might have succeeded eventually.
+
 ## What I'd actually deploy
 
 **`mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit`** — 7/9 overall at **6,069 tokens
@@ -542,6 +599,8 @@ dependencies beyond `mlx-lm`, `llama.cpp` and `npx`.
 | `bench_extended.py` | runtime bug, implement-from-spec, no-op trap |
 | `bench_specdec.py` | speculative decoding, graded not just timed |
 | `bench_llamacpp.py` | llama.cpp arm — runtime and quantization controls |
+| `bench_mtp.py` | MTP speculative decoding via llama.cpp |
+| `e4_handoff.py` | multi-turn agent loop — structured handoff |
 | `screen_config.py` | pre-download architecture / KV screen |
 
 ## Limitations
