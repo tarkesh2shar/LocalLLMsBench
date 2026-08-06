@@ -68,6 +68,10 @@ Thresholds are at the top of the script (`MIN_AVAIL_GIB`, `MAX_SWAP_GIB`,
 
 ## 6. Run
 
+There are two benchmarks. **Run both** — the second is what reordered the results.
+
+### Round 1: the two `tsc` repair tasks (T1, T2)
+
 ```bash
 python3 harness/bench.py
 ```
@@ -79,6 +83,35 @@ python3 harness/bench.py gpt-oss
 ```
 
 Results land in `results/results.json`; server logs in `results/server-logs/`.
+
+### Round 2: runtime bug, implement-from-spec, no-op trap (T3–T5)
+
+```bash
+python3 harness/bench_extended.py
+```
+
+Same model list, three more task kinds, graded by `vitest` as well as `tsc`. Filter by
+model, by task, or both:
+
+```bash
+python3 harness/bench_extended.py --task=T5
+python3 harness/bench_extended.py gpt-oss --task=T3
+```
+
+Results land in `results/results-extended.json`.
+
+This one is built for unattended runs and differs from `bench.py` in three ways:
+
+- **streaming with stall detection.** A hung model aborts after `STALL_TIMEOUT` (300s of
+  silence between tokens) instead of blocking on a 30-minute HTTP timeout. Runs that
+  abort are logged `[STALLED]` or `[TIMEOUT]`, so "slow" and "hung" stay distinguishable.
+- **health probe + one automatic restart** per model. A model whose server dies twice is
+  abandoned rather than stalling the queue.
+- **results flushed after every single run**, so an interrupted session loses nothing.
+
+`STALL_TIMEOUT` must exceed worst-case *prefill*, during which no tokens are emitted at
+all. 300s is comfortable for a 20K prompt on a slow dense model; lower it and you will
+kill healthy runs.
 
 ## 7. Summarise
 
@@ -102,14 +135,35 @@ EOF
 **Models** — the `MODELS` list at the top of `harness/bench.py`: `(repo, port,
 extra_server_args)`. Give each a distinct port.
 
-**Tasks** — the `TASKS` list. Each needs `file`, the exact `error` line as `tsc`
-prints it, and `criteria`. Add the file to the fixture first and confirm `tsc`
-reports it.
+**Tasks** — the `TASKS` list in `bench.py` (tsc repairs) or `bench_extended.py` (which
+also supports `kind: "vitest"` and `kind: "noop"`, plus a `setup` hook that mutates the
+fixture before the run — that is how T3 injects its bug).
 
 Note the grader scores against a **baseline**: a task must clear its own target error
 and introduce no new ones. Pre-existing errors in files a task doesn't touch are not
 counted against the model. Getting this wrong understates results badly — my first
 version required zero total errors and marked correct fixes as failures.
+
+### Grading traps, learned the hard way
+
+Three grader bugs in this project inflated scores. All were found by reading raw model
+output; none were visible in the pass/fail column. If you extend the suite, check these:
+
+1. **"Produced no edit" is not "correctly declined."** On a trap task these look
+   identical. A model that exhausts its token budget mid-thought produced nothing, but
+   it did not decide anything. Check `finish_reason == "length"` and score it separately.
+
+2. **Strict anchor matching conflates two different failures.** One model dropped a line
+   of source (a real content error); another emitted a semantically perfect edit indented
+   4 spaces where the file used 2. Scoring both as "failed to reproduce the source" is
+   wrong — every real applier normalises indentation. `bench_extended.py` matches
+   leniently and records `anchor_match: "exact" | "lenient"` so you can still tell.
+
+3. **Don't match a decline phrase anywhere in the output.** A model that quotes your
+   instruction back ("reply with exactly: NO CHANGE NEEDED") while rambling will match.
+   Require a completed response *and* the phrase near the end.
+
+Superseded results are kept in `results/*-BADGRADER.json` rather than deleted.
 
 **Token budget** — `MAX_TOKENS = 8000`. Thinking models need headroom to reason *and*
 answer; too small a cap is consumed entirely by reasoning and returns empty content.

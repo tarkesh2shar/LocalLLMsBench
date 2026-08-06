@@ -4,14 +4,27 @@ I wanted to know whether a local model could act as the *worker* in a hybrid set
 a big cloud model plans and reviews, a local model does the bounded editing. So I
 built a harness that grades models objectively and ran nine configurations through it.
 
-The model rankings turned out to be the least interesting part. The useful findings
-were the things that silently broke before any model quality mattered at all.
+**The single most useful result was that I got it wrong.**
 
-**Read this first:** the benchmark is **two tasks on one repository, single-shot,
-single-turn, no tool use**. That is a narrow basis. Decoding is greedy, so results
-are *reproducible* — one model reproduced its scores token-for-token across three
-separate runs — but reproducible is not the same as representative. Treat the
-harness as the contribution and the numbers as a starting point.
+I ran two tasks, published a recommendation, and said one model should be retired as a
+candidate. Then I added three more tasks. The ranking inverted, and the model I told
+people to retire is the one I would now deploy — at roughly a fifth of the cost of the
+one I recommended.
+
+That correction is [section 8](#8-then-i-added-three-more-tasks-and-the-ranking-inverted).
+The original two-task results are left exactly as published, so the mistake is visible
+rather than edited away.
+
+The rest of what proved useful was not about model quality at all — it was the things
+that silently broke before quality mattered, and the failure modes that a pass/fail
+column cannot show you.
+
+**Read this first:** five tasks, one repository, one attempt each, **single-shot,
+single-turn, no tool use**. Still a narrow basis. Decoding is greedy, so results are
+*reproducible* — models reproduced their scores token-for-token across restarts — but
+reproducible is not representative. Going from two tasks to five reordered the table;
+five may not be enough either. Treat the harness as the contribution and the ranking
+as provisional.
 
 ---
 
@@ -26,23 +39,35 @@ Grading is mechanical. The model proposes an edit → we apply it to an isolated
 → run `tsc`. A run passes only if the target error is gone **and** no new error
 appeared. No human judgement.
 
-The two tasks:
+The five tasks. **T1 and T2 were round 1**; T3–T5 were added afterwards and are what
+reordered the results.
 
-| Task | Error | Correct fix |
-|---|---|---|
-| **T1** | `TS6133: 'error' is declared but its value is never read` (App.tsx:149) | `.catch(error =>` → `.catch(() =>` |
-| **T2** | `TS2503: Cannot find namespace 'NodeJS'` (SearchBar.tsx:30) | `NodeJS.Timeout` → `ReturnType<typeof setTimeout>` |
+| Task | Kind | What it tests | Graded by |
+|---|---|---|---|
+| **T1** | repair | `TS6133: 'error' is declared but never read` (App.tsx:149) | `tsc` |
+| **T2** | repair | `TS2503: Cannot find namespace 'NodeJS'` (SearchBar.tsx:30) | `tsc` |
+| **T3** | runtime bug | an arithmetic bug breaks an existing unit test | `vitest` |
+| **T4** | generation | implement a function against a provided spec test | `vitest` |
+| **T5** | no-op trap | clean file + a **fabricated** error; correct answer is no change | `tsc` + diff |
 
 T1 looks trivial. It is not: `error` is declared **twice** in that file — once as a
 `useState` variable, once as the `.catch()` parameter. The compiler points at line
 149. Resolving which `error` it means is the whole task.
 
-Each model ran both tasks under two strategies: return the **whole corrected file**,
-or return a single anchor-based **SEARCH/REPLACE** block.
+T5 is the one that broke almost everything, and the only task where doing nothing is
+correct.
+
+Each task ran under two strategies — return the **whole corrected file**, or a single
+anchor-based **SEARCH/REPLACE** block — except T4, where writing a new function body is
+not naturally an anchor edit.
 
 ---
 
-## Results
+## Round 1 results (T1 and T2 only)
+
+This is the table I originally published. **It does not survive the extra tasks** — see
+[section 8](#8-then-i-added-three-more-tasks-and-the-ranking-inverted) for the combined
+picture.
 
 | Model | Score | T1 whole | T1 s/r | T2 whole | T2 s/r | Tokens | Total time | Weights |
 |---|---|---|---|---|---|---|---|---|
