@@ -460,8 +460,46 @@ also will not load on their own. `--spec-type draft-mtp` is required.
 
 So the earlier conclusion needs splitting: speculative decoding via an *external
 drafter in mlx-lm* is not worth it (1.16×, changes output). MTP *through llama.cpp*
-clearly is (1.67×, score intact). llama.cpp also offers `draft-eagle3`, `draft-dspark`
-and several ngram modes that need no drafter at all — untested here.
+clearly is (1.67×, score intact).
+
+### But MTP does not change which model to run
+
+A 1.67× speedup does not close a 16× gap. On the same five tasks:
+
+| Config | Score | Total | Resident |
+|---|---|---|---|
+| **Qwen3-Coder-30B (MLX)** | **5/5** | **58s** | 17.7 GiB |
+| Bonsai-27B 1-bit | 3/5 | 665s | **5.4 GiB** |
+| Qwen3.6-27B + MTP n=3 | 3/5 | 962s | 19.9 GiB |
+| Qwen3.6-27B, no drafter | 3/5 | 1,608s | 16.4 GiB |
+
+MTP takes Qwen3.6-27B from 1,608s to 962s — still **16× slower than Qwen3-Coder and
+two tasks worse**. And it cannot be applied to the model you would actually pick:
+Qwen3-Coder is `qwen3_moe` and has no MTP heads. MTP exists only in Qwen3.5/3.6.
+
+### Compression beat speculation
+
+The more useful comparison is MTP against simply shipping a smaller build of the same
+model:
+
+| | tok/s | Total | Resident |
+|---|---|---|---|
+| Q4_0 + MTP n=3 | 25.1 | 962s | 19.9 GiB |
+| **Bonsai 1-bit** | 25.3 | **665s** | **5.4 GiB** |
+
+Same base model, same 3/5, **essentially identical throughput** — but 1-bit reaches it
+with **3.7× less memory**. MTP *costs* +3.5 GiB; compression *saves* 11 GiB.
+
+If the goal is a faster 27B on a 48 GB machine, compressing it beats speculating with
+it. The two are not mutually exclusive, and MTP on top of a 1-bit build is the obvious
+next experiment — untested here, as are llama.cpp's `draft-eagle3`, `draft-dspark` and
+ngram modes, which need no drafter and therefore no extra memory at all.
+
+**When MTP is worth enabling:** you are committed to Qwen3.5/3.6 specifically, running
+llama.cpp, and have ~3.5 GiB spare. Then it is free performance. Otherwise it is a fix
+for a problem better solved by picking a different model or a smaller build. It remains
+impossible in mlx-lm — stay on MLX and the MTP heads in your Qwen3.5/3.6 downloads are
+dead weight.
 
 ## What I'd actually deploy
 
@@ -480,6 +518,12 @@ MLX_MPI_LIBNAME=$(brew --prefix open-mpi)/lib/libmpi.dylib \
 mlx_lm.server --model mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit \
   --host 127.0.0.1 --port 8081 --prefill-step-size 512
 ```
+
+**Do not reach for speculative decoding to fix a slow model.** MTP gives a genuine
+1.67× on Qwen3.5/3.6 in llama.cpp, but it cannot be applied to Qwen3-Coder at all, and
+it leaves the model it *can* accelerate 16× slower than simply picking a better one
+(section 12). If a 27B specifically is what you need, a 1-bit build is both faster and
+3.7× lighter than MTP on the 4-bit build.
 
 An earlier version of this README recommended Qwen3.6-35B-A3B on the strength of the
 two-task result. That recommendation was wrong, and it is left visible in the git
