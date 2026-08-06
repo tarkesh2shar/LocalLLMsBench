@@ -229,6 +229,20 @@ Two harness details that matter if you extend it:
 
 Results in `results/results-e4.json`, including the full per-turn command trace.
 
+### Round 6: diff vs whole-file across turns
+
+```bash
+python3 harness/e5_editmode.py
+```
+
+Same task and brief as round 5's winning arm; the only difference is the edit verb the
+model is given — `EDIT` with a SEARCH/REPLACE block, or `WRITE` with the complete file.
+
+`WRITE` records how much the file shrank and warns above 30%, because a truncated
+whole-file reply *replaces* the file — the failure anchor edits structurally cannot have.
+
+Results in `results/results-e5.json`.
+
 ---
 
 ## Editing the benchmark

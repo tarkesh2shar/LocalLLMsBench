@@ -216,6 +216,9 @@ One caveat: anchor edits require the model to reproduce source text *verbatim*. 
 model silently dropped a `try {` line from its SEARCH block, so the edit never
 applied. That's a real failure mode worth detecting explicitly.
 
+§14 tests whether this advantage survives multi-turn. Short version: correctness evens
+out, the 3× token gap does not.
+
 ---
 
 ## Two things that broke before any model ran
@@ -558,6 +561,50 @@ is far below what a real shell-driven agent accumulates — the cold/brief *delt
 measurement, not the absolute numbers. One run per arm, one repo, greedy decoding. The
 cold arm hit a 40-turn cap and might have succeeded eventually.
 
+## 14. Diff vs whole-file, across turns: a cost rule, not a correctness rule
+
+§7 measured anchor edits as 3.1× cheaper single-turn, and §10 showed a truncated
+whole-file reply destroying ~100 lines. But Aider's published benchmarks find diff and
+whole-file have *similar single-turn correctness* while whole-file is **more stable across
+multi-turn tasks** — and §13 used anchor edits exclusively, so it settled nothing.
+
+Same task and same brief as §13's winning arm. The only difference is the edit verb:
+
+| | Anchor edits | Whole file |
+|---|---|---|
+| Solved | **yes** 26/0 | **yes** 26/0 |
+| Turns | 10 | **9** |
+| Peak context | 3,840 | 3,870 |
+| **Output tokens** | **468** | **1,385** |
+
+**Correctness was identical, and Aider is partly vindicated** — whole-file solved it in one
+*fewer* turn with the same peak context. The scope-discipline advantage anchor edits showed
+single-turn did not carry across turns.
+
+**But whole-file cost 3× the output tokens** — 1,385 vs 468, almost exactly the 3.1× ratio
+measured single-turn. That gap is stable across regimes.
+
+The behavioural difference is more telling than the totals. **Whole-file rewrote
+`weatherUtils.ts` twice in a row** (turns 5 and 6) before testing — re-emitting the entire
+file each time it wasn't satisfied. Anchor edits never did that. Whole-file also read 4
+files before its first edit against anchor's 2, because it needed complete files to
+reproduce them.
+
+### So the rule survives, with a weaker justification
+
+- **Not** "whole-file is less correct." Both solved it; Aider's multi-turn stability claim
+  holds up.
+- **Yes** "whole-file costs ~3× the tokens for the same result" — consistent single-turn
+  and multi-turn.
+- **Yes** "whole-file can destroy the file." A truncated reply *replaces*; a malformed
+  anchor edit merely fails to apply (§10).
+
+Diff-only is a **cost and blast-radius rule, not a correctness rule.** Where token budget
+is the binding control, 3× is still decisive.
+
+**Caveats:** one run per arm, one task, one model. The task is small enough that whole-file
+rewrites stay cheap; on larger files the token gap would widen sharply.
+
 ## What I'd actually deploy
 
 **`mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit`** — 7/9 overall at **6,069 tokens
@@ -601,6 +648,7 @@ dependencies beyond `mlx-lm`, `llama.cpp` and `npx`.
 | `bench_llamacpp.py` | llama.cpp arm — runtime and quantization controls |
 | `bench_mtp.py` | MTP speculative decoding via llama.cpp |
 | `e4_handoff.py` | multi-turn agent loop — structured handoff |
+| `e5_editmode.py` | multi-turn — anchor edits vs whole-file |
 | `screen_config.py` | pre-download architecture / KV screen |
 
 ## Limitations

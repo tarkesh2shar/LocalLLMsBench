@@ -1,0 +1,168 @@
+{
+  "model": "mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit",
+  "started": "2026-08-06 15:08:41",
+  "hypothesis": "does the diff-only advantage survive multi-turn, or does whole-file become more stable (Aider)?",
+  "arms": [
+    {
+      "arm": "anchor_edits",
+      "turns": [
+        {
+          "turn": 1,
+          "ctx": 385,
+          "kind": "read",
+          "cmd": "READ src/utils/weatherUtils.ts",
+          "out_tokens": 11
+        },
+        {
+          "turn": 2,
+          "ctx": 1527,
+          "kind": "read",
+          "cmd": "READ src/components/TemperatureToggle.tsx",
+          "out_tokens": 12
+        },
+        {
+          "turn": 3,
+          "ctx": 1676,
+          "kind": "edit",
+          "cmd": "EDIT src/utils/weatherUtils.ts",
+          "out_tokens": 134
+        },
+        {
+          "turn": 4,
+          "ctx": 1826,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 5
+        },
+        {
+          "turn": 5,
+          "ctx": 1864,
+          "kind": "read",
+          "cmd": "READ src/App.test.tsx",
+          "out_tokens": 10
+        },
+        {
+          "turn": 6,
+          "ctx": 2161,
+          "kind": "read",
+          "cmd": "READ src/App.tsx",
+          "out_tokens": 9
+        },
+        {
+          "turn": 7,
+          "ctx": 3487,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 5
+        },
+        {
+          "turn": 8,
+          "ctx": 3525,
+          "kind": "edit",
+          "cmd": "EDIT src/components/TemperatureToggle.tsx",
+          "out_tokens": 272
+        },
+        {
+          "turn": 9,
+          "ctx": 3815,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 5
+        },
+        {
+          "turn": 10,
+          "ctx": 3840,
+          "kind": "done",
+          "cmd": "DONE",
+          "out_tokens": 5
+        }
+      ],
+      "start_failed": 3,
+      "first_edit_turn": 3,
+      "context_at_first_edit": 1676,
+      "tool_calls_before_first_edit": 2,
+      "peak_context": 3840,
+      "total_turns": 10,
+      "end_passed": 26,
+      "end_failed": 0,
+      "solved": true
+    },
+    {
+      "arm": "whole_file",
+      "turns": [
+        {
+          "turn": 1,
+          "ctx": 379,
+          "kind": "read",
+          "cmd": "READ src/utils/weatherUtils.ts",
+          "out_tokens": 7
+        },
+        {
+          "turn": 2,
+          "ctx": 1518,
+          "kind": "read",
+          "cmd": "READ src/components/TemperatureToggle.tsx",
+          "out_tokens": 9
+        },
+        {
+          "turn": 3,
+          "ctx": 1664,
+          "kind": "read",
+          "cmd": "READ src/utils/weatherUtils.test.ts",
+          "out_tokens": 8
+        },
+        {
+          "turn": 4,
+          "ctx": 2108,
+          "kind": "read",
+          "cmd": "READ src/App.test.tsx",
+          "out_tokens": 7
+        },
+        {
+          "turn": 5,
+          "ctx": 2402,
+          "kind": "edit",
+          "cmd": "WRITE src/utils/weatherUtils.ts",
+          "out_tokens": 73
+        },
+        {
+          "turn": 6,
+          "ctx": 2526,
+          "kind": "edit",
+          "cmd": "WRITE src/utils/weatherUtils.ts",
+          "out_tokens": 1135
+        },
+        {
+          "turn": 7,
+          "ctx": 3683,
+          "kind": "edit",
+          "cmd": "WRITE src/components/TemperatureToggle.tsx",
+          "out_tokens": 142
+        },
+        {
+          "turn": 8,
+          "ctx": 3848,
+          "kind": "test",
+          "cmd": "TEST",
+          "out_tokens": 2
+        },
+        {
+          "turn": 9,
+          "ctx": 3870,
+          "kind": "done",
+          "cmd": "DONE",
+          "out_tokens": 2
+        }
+      ],
+      "start_failed": 3,
+      "first_edit_turn": 5,
+      "context_at_first_edit": 2402,
+      "tool_calls_before_first_edit": 4,
+      "peak_context": 3870,
+      "total_turns": 9,
+      "end_passed": 26,
+      "end_failed": 0,
+      "solved": true
+    }
+  ]
+}
