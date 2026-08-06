@@ -131,12 +131,16 @@ def wait_ready(port, proc, timeout=600):
     raise RuntimeError("server did not become ready")
 
 
-def chat(port, messages, max_tokens=800, timeout=1800, **params):
-    """POST /v1/chat/completions.
+def chat(port, messages, max_tokens=800, timeout=1800, stall_timeout=300,
+         **params):
+    """POST /v1/chat/completions, non-streaming.
 
     Passing no sampling params reproduces what an OpenAI-compatible client
     sends by default -- which means mlx_lm.server's own default of
     `--temp 0.0`, i.e. fully greedy decoding.
+
+    Prefer chat_stream() for long runs: this call cannot tell a slow model
+    from a hung one until `timeout` expires.
     """
     body = {"messages": messages, "max_tokens": max_tokens, "stream": False}
     body.update(params)
@@ -164,6 +168,112 @@ def chat(port, messages, max_tokens=800, timeout=1800, **params):
         "usage": data.get("usage", {}),
         "elapsed": round(time.time() - t0, 2),
     }
+
+
+def chat_stream(port, messages, max_tokens=800, stall_timeout=300,
+                hard_timeout=1800, on_progress=None, **params):
+    """Streaming chat with STALL detection -- the safe choice for unattended runs.
+
+    Distinguishes "slow" from "hung":
+      stall_timeout  max seconds of silence between SSE chunks. The socket
+                     read timeout enforces this, so a wedged server aborts in
+                     `stall_timeout` rather than blocking for `hard_timeout`.
+                     Must exceed worst-case PREFILL, during which no tokens are
+                     emitted at all (a 20K prompt on a slow dense model can be
+                     a minute or more).
+      hard_timeout   total wall-clock ceiling for the whole response.
+
+    Returns the same shape as chat(), plus `stalled` / `timed_out` flags.
+    """
+    body = {"messages": messages, "max_tokens": max_tokens, "stream": True}
+    body.update(params)
+    req = urllib.request.Request(
+        f"http://127.0.0.1:{port}/v1/chat/completions",
+        data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json", "Authorization": "Bearer local"})
+
+    t0 = time.time()
+    content, reasoning, keys = [], [], set()
+    finish, usage, ntok = None, {}, 0
+
+    try:
+        resp = urllib.request.urlopen(req, timeout=stall_timeout)
+    except urllib.error.HTTPError as e:
+        return {"ok": False, "error": f"HTTP {e.code}: {e.read()[:300].decode('replace')}"}
+    except Exception as e:
+        return {"ok": False, "error": f"{type(e).__name__}: {e}"}
+
+    try:
+        while True:
+            if time.time() - t0 > hard_timeout:
+                resp.close()
+                return {"ok": False, "timed_out": True,
+                        "error": f"exceeded hard_timeout {hard_timeout}s",
+                        "partial_tokens": ntok, "elapsed": round(time.time() - t0, 2)}
+            # socket timeout == stall_timeout, so this raises on silence
+            line = resp.readline()
+            if not line:
+                break
+            line = line.decode("utf-8", "replace").strip()
+            if not line or not line.startswith("data:"):
+                continue
+            payload = line[5:].strip()
+            if payload == "[DONE]":
+                break
+            try:
+                chunk = json.loads(payload)
+            except json.JSONDecodeError:
+                continue
+            ch = (chunk.get("choices") or [{}])[0]
+            delta = ch.get("delta") or {}
+            keys.update(delta.keys())
+            if delta.get("content"):
+                content.append(delta["content"]);  ntok += 1
+            if delta.get("reasoning_content") or delta.get("reasoning"):
+                reasoning.append(delta.get("reasoning_content") or delta["reasoning"])
+                ntok += 1
+            if ch.get("finish_reason"):
+                finish = ch["finish_reason"]
+            if chunk.get("usage"):
+                usage = chunk["usage"]
+            if on_progress and ntok % 50 == 0:
+                on_progress(ntok, time.time() - t0)
+    except socket.timeout:
+        resp.close()
+        return {"ok": False, "stalled": True,
+                "error": f"no output for {stall_timeout}s (model appears hung)",
+                "partial_tokens": ntok, "elapsed": round(time.time() - t0, 2)}
+    except Exception as e:
+        resp.close()
+        return {"ok": False, "error": f"{type(e).__name__}: {e}",
+                "partial_tokens": ntok, "elapsed": round(time.time() - t0, 2)}
+    finally:
+        try:
+            resp.close()
+        except Exception:
+            pass
+
+    el = time.time() - t0
+    if not usage:
+        usage = {"completion_tokens": ntok}
+    return {
+        "ok": True,
+        "text": "".join(content),
+        "reasoning": "".join(reasoning),
+        "message_keys": sorted(keys),
+        "finish": finish,
+        "usage": usage,
+        "elapsed": round(el, 2),
+    }
+
+
+def healthy(port, timeout=30):
+    """Cheap liveness probe: can the server still answer at all?"""
+    try:
+        return chat(port, [{"role": "user", "content": "ok"}],
+                    max_tokens=1, timeout=timeout).get("ok", False)
+    except Exception:
+        return False
 
 
 def rss_gib(pid):
