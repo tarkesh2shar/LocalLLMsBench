@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.orig
+results/server-logs/
+results/watchdog.log
+.DS_Store
+__pycache__/

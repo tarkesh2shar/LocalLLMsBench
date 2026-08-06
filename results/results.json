@@ -1,0 +1,1157 @@
+{
+  "started": "07:17:09",
+  "models": [
+    {
+      "model": "mlx-community/Qwen3-Coder-30B-A3B-Instruct-5bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": false,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1726,
+          "completion_tokens": 1604,
+          "elapsed_s": 26.17,
+          "tok_per_s": 61.3,
+          "lines_changed": 0,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 7530,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/Fo"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": false,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1742,
+          "completion_tokens": 87,
+          "elapsed_s": 1.55,
+          "tok_per_s": 56.1,
+          "lines_changed": 0,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 408,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n        {error && (\n          <div className=\"error-message\">\n            <p>{error}</p>\n            <button onClick={() => setError(null)}>Dismiss</button>\n          </div>\n        )}\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 824,
+          "completion_tokens": 701,
+          "elapsed_s": 10.91,
+          "tok_per_s": 64.3,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 3112,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 840,
+          "completion_tokens": 227,
+          "elapsed_s": 3.51,
+          "tok_per_s": 64.7,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 1035,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n  useEffect(() => {\n    let timeoutId: NodeJS.Timeout;\n    \n    if (query.length > 1) {\n      setIsLoading(true);\n      timeoutId = setTimeout(async () => {\n        try {\n          cons"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "MAGIC-CANARY-7734",
+        "prompt_tokens": 21088
+      }
+    },
+    {
+      "model": "mlx-community/Qwen3.5-35B-A3B-4bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": true,
+            "new_errors_introduced": [
+              "src/App.test.tsx(4,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module.",
+              "src/App.tsx(1,47): error TS2304: Cannot find name 'GeocodingResult'.",
+              "src/App.tsx(2,11): error TS2304: Cannot find name 'setLoading'.",
+              "src/App.tsx(3,11): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(6,32): error TS2304: Cannot find name 'WeatherService'.",
+              "src/App.tsx(7,13): error TS2304: Cannot find name 'setWeatherData'.",
+              "src/App.tsx(8,13): error TS2304: Cannot find name 'setCurrentLocation'.",
+              "src/App.tsx(10,13): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(13,13): error TS2304: Cannot find name 'setLoading'.",
+              "src/main.tsx(3,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module."
+            ],
+            "remaining_errors": [
+              "src/App.test.tsx(4,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module.",
+              "src/App.tsx(1,47): error TS2304: Cannot find name 'GeocodingResult'.",
+              "src/App.tsx(2,11): error TS2304: Cannot find name 'setLoading'.",
+              "src/App.tsx(3,11): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(6,32): error TS2304: Cannot find name 'WeatherService'.",
+              "src/App.tsx(7,13): error TS2304: Cannot find name 'setWeatherData'.",
+              "src/App.tsx(8,13): error TS2304: Cannot find name 'setCurrentLocation'.",
+              "src/App.tsx(10,13): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(13,13): error TS2304: Cannot find name 'setLoading'.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'.",
+              "src/main.tsx(3,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module."
+            ]
+          },
+          "prompt_tokens": 1917,
+          "completion_tokens": 8000,
+          "elapsed_s": 119.23,
+          "tok_per_s": 67.1,
+          "lines_changed": 252,
+          "had_thinking": true,
+          "reasoning_chars": 29632,
+          "content_chars": 0,
+          "finish": "length",
+          "message_keys": [
+            "role",
+            "reasoning"
+          ],
+          "output_preview": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   **Task:** Fix a specific TypeScript build error in a React project.\n    *   **File:** `src/App.tsx`\n    *   **Error:** `TS6133: 'error' is decla"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "reason": "SEARCH text not found in file"
+          },
+          "prompt_tokens": 1936,
+          "completion_tokens": 3205,
+          "elapsed_s": 47.98,
+          "tok_per_s": 66.8,
+          "lines_changed": null,
+          "had_thinking": true,
+          "reasoning_chars": 12458,
+          "content_chars": 323,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n      .catch(error => {\n        setError('Failed to fetch weather data. Please try again.');\n        setLoading(false);\n      });\n  }, 500);\n=======\n      .catch(_error => {\n        set"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 933,
+          "completion_tokens": 2740,
+          "elapsed_s": 40.6,
+          "tok_per_s": 67.5,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 7542,
+          "content_chars": 3117,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 952,
+          "completion_tokens": 609,
+          "elapsed_s": 9.69,
+          "tok_per_s": 62.8,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 2491,
+          "content_chars": 125,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n    let timeoutId: NodeJS.Timeout;\n=======\n    let timeoutId: ReturnType<typeof setTimeout>;\n>>>>>>> REPLACE"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "n:** Does `MAGIC-CANARY-7734` match the text in the session note? Yes.\n\n6.  **Construct Response:** `MAGIC-CANARY-7734`\n",
+        "prompt_tokens": 23301
+      }
+    },
+    {
+      "model": "mlx-community/mistralai_Devstral-Small-2-24B-Instruct-2512-MLX-4Bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": false,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1841,
+          "completion_tokens": 1655,
+          "elapsed_s": 91.36,
+          "tok_per_s": 18.1,
+          "lines_changed": 74,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 7411,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/Fo"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": true,
+            "new_errors_introduced": [
+              "src/App.tsx(150,16): error TS6133: 'error' is declared but its value is never read."
+            ],
+            "remaining_errors": [
+              "src/App.tsx(150,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1864,
+          "completion_tokens": 181,
+          "elapsed_s": 9.9,
+          "tok_per_s": 18.3,
+          "lines_changed": 1,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 803,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n    try {\n      const data = await WeatherService.getWeatherData(city.latitude, city.longitude);\n      setWeatherData(data);\n      setCurrentLocation(city);\n    } catch (error: any) {\n "
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 888,
+          "completion_tokens": 765,
+          "elapsed_s": 41.27,
+          "tok_per_s": 18.5,
+          "lines_changed": 8,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 3122,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": false,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 911,
+          "completion_tokens": 286,
+          "elapsed_s": 15.11,
+          "tok_per_s": 18.9,
+          "lines_changed": 0,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 961,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n    return () => clearTimeout(timeoutId);\n  }, [query]);\n\n  const handleSelectCity = (city: GeocodingResult) => {\n=======\n    return () => clearTimeout(timeoutId);\n  }, [query]);\n\n  con"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "MAGIC-CANARY-7734",
+        "prompt_tokens": 22336
+      }
+    },
+    {
+      "model": "mlx-community/gpt-oss-20b-MXFP4-Q8",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": true,
+            "new_errors_introduced": [
+              "src/App.test.tsx(4,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module.",
+              "src/App.tsx(2,3): error TS2304: Cannot find name 'WeatherService'.",
+              "src/App.tsx(2,42): error TS2339: Property 'latitude' does not exist on type 'Location'.",
+              "src/App.tsx(2,61): error TS2339: Property 'longitude' does not exist on type 'Location'.",
+              "src/App.tsx(3,11): error TS7006: Parameter 'data' implicitly has an 'any' type.",
+              "src/App.tsx(4,7): error TS2304: Cannot find name 'setWeatherData'.",
+              "src/App.tsx(5,7): error TS2304: Cannot find name 'setLoading'.",
+              "src/App.tsx(7,12): error TS6133: 'error' is declared but its value is never read.",
+              "src/App.tsx(7,12): error TS7006: Parameter 'error' implicitly has an 'any' type.",
+              "src/App.tsx(8,7): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(9,7): error TS2304: Cannot find name 'setLoading'.",
+              "src/main.tsx(3,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module."
+            ],
+            "remaining_errors": [
+              "src/App.test.tsx(4,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module.",
+              "src/App.tsx(2,3): error TS2304: Cannot find name 'WeatherService'.",
+              "src/App.tsx(2,42): error TS2339: Property 'latitude' does not exist on type 'Location'.",
+              "src/App.tsx(2,61): error TS2339: Property 'longitude' does not exist on type 'Location'.",
+              "src/App.tsx(3,11): error TS7006: Parameter 'data' implicitly has an 'any' type.",
+              "src/App.tsx(4,7): error TS2304: Cannot find name 'setWeatherData'.",
+              "src/App.tsx(5,7): error TS2304: Cannot find name 'setLoading'.",
+              "src/App.tsx(7,12): error TS6133: 'error' is declared but its value is never read.",
+              "src/App.tsx(7,12): error TS7006: Parameter 'error' implicitly has an 'any' type.",
+              "src/App.tsx(8,7): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(9,7): error TS2304: Cannot find name 'setLoading'.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'.",
+              "src/main.tsx(3,17): error TS2306: File '<scratch>/e5d1f3df-5e3c-4451-b84b-122ab771753c/scratchpad/bench_repo/src/App.tsx' is not a module."
+            ]
+          },
+          "prompt_tokens": 1841,
+          "completion_tokens": 2172,
+          "elapsed_s": 31.66,
+          "tok_per_s": 68.6,
+          "lines_changed": 243,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 9881,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<|channel|>analysis<|message|>We need to fix TS6133: 'error' is declared but its value is never read. This occurs at line 149, column 16. Let's locate line 149. Counting lines: The file starts at line"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1858,
+          "completion_tokens": 596,
+          "elapsed_s": 9.36,
+          "tok_per_s": 63.7,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 2660,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<|channel|>analysis<|message|>We need to find the error: TS6133: 'error' is declared but its value is never read. In App.tsx line 149,16. Let's count lines? But easier: In handleCitySelect, we have ca"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 920,
+          "completion_tokens": 984,
+          "elapsed_s": 14.22,
+          "tok_per_s": 69.2,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 4256,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<|channel|>analysis<|message|>We need to fix TS2503: Cannot find namespace 'NodeJS'. In TypeScript, NodeJS namespace is available when @types/node is installed. But in a React project, NodeJS namespac"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 937,
+          "completion_tokens": 788,
+          "elapsed_s": 11.49,
+          "tok_per_s": 68.6,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 3227,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<|channel|>analysis<|message|>We need to fix TS2503: Cannot find namespace 'NodeJS'. In TS, NodeJS namespace is available if @types/node is installed. But we can avoid using NodeJS.Timeout type by usi"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "the identifier only.\" So answer: MAGIC-CANARY-7734.<|end|><|start|>assistant<|channel|>final<|message|>MAGIC-CANARY-7734",
+        "prompt_tokens": 20634
+      }
+    },
+    {
+      "model": "mlx-community/Qwen3.6-35B-A3B-4bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1917,
+          "completion_tokens": 4847,
+          "elapsed_s": 74.44,
+          "tok_per_s": 65.1,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 12634,
+          "content_chars": 7529,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/Fo"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1936,
+          "completion_tokens": 1593,
+          "elapsed_s": 24.8,
+          "tok_per_s": 64.2,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 5757,
+          "content_chars": 313,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n=======\n        .catch(() => {\n          setErr"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 933,
+          "completion_tokens": 2434,
+          "elapsed_s": 35.88,
+          "tok_per_s": 67.8,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 6666,
+          "content_chars": 3140,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 952,
+          "completion_tokens": 1088,
+          "elapsed_s": 16.78,
+          "tok_per_s": 64.8,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 4317,
+          "content_chars": 125,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n    let timeoutId: NodeJS.Timeout;\n=======\n    let timeoutId: ReturnType<typeof setTimeout>;\n>>>>>>> REPLACE"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "y start of this session? Reply with the identifier only.\"\n- Answer matches exactly.\nProceed. \nOutput: MAGIC-CANARY-7734\n",
+        "prompt_tokens": 23301
+      }
+    },
+    {
+      "model": "mlx-community/Qwen3.6-27B-4bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1917,
+          "completion_tokens": 5274,
+          "elapsed_s": 323.63,
+          "tok_per_s": 16.3,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 14130,
+          "content_chars": 7529,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/Fo"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1936,
+          "completion_tokens": 2798,
+          "elapsed_s": 172.48,
+          "tok_per_s": 16.2,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 9543,
+          "content_chars": 317,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n=======\n        .catch(_error => {\n          se"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 933,
+          "completion_tokens": 3715,
+          "elapsed_s": 223.69,
+          "tok_per_s": 16.6,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 11613,
+          "content_chars": 3140,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 952,
+          "completion_tokens": 1024,
+          "elapsed_s": 63.25,
+          "tok_per_s": 16.2,
+          "lines_changed": 2,
+          "had_thinking": true,
+          "reasoning_chars": 3700,
+          "content_chars": 231,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content",
+            "reasoning"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n  useEffect(() => {\n    let timeoutId: NodeJS.Timeout;\n    \n    if (query.length > 1) {\n=======\n  useEffect(() => {\n    let timeoutId: ReturnType<typeof setTimeout>;\n    \n    if (query."
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "r only.\"\nSo the answer should be exactly \"MAGIC-CANARY-7734\".\nDone. \nNo extra text.\nProceed. \nOutput: MAGIC-CANARY-7734\n",
+        "prompt_tokens": 23301
+      }
+    },
+    {
+      "model": "mlx-community/granite-4.0-h-small-4bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": true,
+            "new_errors_introduced": [
+              "src/App.tsx(112,16): error TS6133: 'error' is declared but its value is never read."
+            ],
+            "remaining_errors": [
+              "src/App.tsx(112,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1717,
+          "completion_tokens": 1334,
+          "elapsed_s": 36.85,
+          "tok_per_s": 36.2,
+          "lines_changed": 113,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 6322,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/ForecastCard'"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": true,
+            "new_errors_introduced": [
+              "src/App.tsx(67,5): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(74,7): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(118,5): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(148,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/App.tsx(149,11): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(185,10): error TS2552: Cannot find name 'error'. Did you mean 'Error'?",
+              "src/App.tsx(187,17): error TS2552: Cannot find name 'error'. Did you mean 'Error'?",
+              "src/App.tsx(188,36): error TS2304: Cannot find name 'setError'."
+            ],
+            "remaining_errors": [
+              "src/App.tsx(67,5): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(74,7): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(118,5): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(148,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/App.tsx(149,11): error TS2304: Cannot find name 'setError'.",
+              "src/App.tsx(185,10): error TS2552: Cannot find name 'error'. Did you mean 'Error'?",
+              "src/App.tsx(187,17): error TS2552: Cannot find name 'error'. Did you mean 'Error'?",
+              "src/App.tsx(188,36): error TS2304: Cannot find name 'setError'.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1733,
+          "completion_tokens": 351,
+          "elapsed_s": 11.78,
+          "tok_per_s": 29.8,
+          "lines_changed": 1,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 1411,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "The error TS6133 indicates that the variable `error` is declared but never used. To fix this error, you can simply remove the declaration of `error` and its associated code. Here's the exact edit you "
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 816,
+          "completion_tokens": 701,
+          "elapsed_s": 19.02,
+          "tok_per_s": 36.9,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 3138,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 832,
+          "completion_tokens": 23,
+          "elapsed_s": 2.0,
+          "tok_per_s": 11.5,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 96,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n  let timeoutId: NodeJS.Timeout;\n=======\n  let timeoutId: number;\n>>>>>>> REPLACE"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "MAGIC-CANARY-7734",
+        "prompt_tokens": 20068
+      }
+    },
+    {
+      "model": "mlx-community/Seed-OSS-36B-Instruct-4bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1970,
+          "completion_tokens": 2354,
+          "elapsed_s": 199.01,
+          "tok_per_s": 11.8,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 9538,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<seed:think>\nGot it, let's see. The error is TS6133: 'error' is declared but its value is never read. Looking at the code, where is 'error' declared?\n\nWait, in the handleLoadSavedLocation function, th"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1994,
+          "completion_tokens": 438,
+          "elapsed_s": 35.69,
+          "tok_per_s": 12.3,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 1720,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<seed:think>\nGot it, let's see. The error is TS6133: 'error' is declared but its value is never read. Looking at the code, where is 'error' declared?\n\nWait, in the handleLoadSavedLocation function, th"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": true,
+            "new_errors_introduced": [
+              "src/components/SearchBar.tsx(2,30): error TS2307: Cannot find module 'node' or its corresponding type declarations."
+            ],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(2,30): error TS2307: Cannot find module 'node' or its corresponding type declarations."
+            ]
+          },
+          "prompt_tokens": 983,
+          "completion_tokens": 1717,
+          "elapsed_s": 139.54,
+          "tok_per_s": 12.3,
+          "lines_changed": 3,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 6456,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<seed:think>\nGot it, let's see. The error is TS2503: Cannot find namespace 'NodeJS'. That usually happens when the TypeScript compiler doesn't know about the Node.js types, like NodeJS.Timeout. \n\nLook"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 1007,
+          "completion_tokens": 1417,
+          "elapsed_s": 112.7,
+          "tok_per_s": 12.6,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 5942,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<seed:think>\nGot it, let's see. The error is TS2503: Cannot find namespace 'NodeJS'. That usually means the TypeScript compiler doesn't know about the NodeJS namespace, which is common when using Node"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "emember it; you will be asked for it later.\" So the build identifier is MAGIC-CANARY-7734.</seed:think>MAGIC-CANARY-7734",
+        "prompt_tokens": 23947
+      }
+    },
+    {
+      "model": "mlx-community/Qwen3-Coder-30B-A3B-Instruct-6bit",
+      "runs": [
+        {
+          "task": "T1_unused_var",
+          "arm": "whole_file",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": false,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1726,
+          "completion_tokens": 1604,
+          "elapsed_s": 28.39,
+          "tok_per_s": 56.5,
+          "lines_changed": 0,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 7530,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/Fo"
+        },
+        {
+          "task": "T1_unused_var",
+          "arm": "search_replace",
+          "passed": false,
+          "grade": {
+            "passed": false,
+            "target_error_gone": false,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+              "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+            ]
+          },
+          "prompt_tokens": 1742,
+          "completion_tokens": 556,
+          "elapsed_s": 9.36,
+          "tok_per_s": 59.4,
+          "lines_changed": 0,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 2586,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n    if (savedLocations) {\n      try {\n        setSavedLocations(JSON.parse(savedLocations));\n      } catch (e) {\n        console.error('Failed to parse saved locations', e);\n      }\n   "
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 824,
+          "completion_tokens": 703,
+          "elapsed_s": 11.83,
+          "tok_per_s": 59.4,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 3138,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n"
+        },
+        {
+          "task": "T2_nodejs_ns",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "target_error_gone": true,
+            "new_errors_introduced": [],
+            "remaining_errors": [
+              "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read."
+            ]
+          },
+          "prompt_tokens": 840,
+          "completion_tokens": 227,
+          "elapsed_s": 3.8,
+          "tok_per_s": 59.7,
+          "lines_changed": 2,
+          "had_thinking": false,
+          "reasoning_chars": 0,
+          "content_chars": 1035,
+          "finish": "stop",
+          "message_keys": [
+            "role",
+            "content"
+          ],
+          "output_preview": "<<<<<<< SEARCH\n  useEffect(() => {\n    let timeoutId: NodeJS.Timeout;\n    \n    if (query.length > 1) {\n      setIsLoading(true);\n      timeoutId = setTimeout(async () => {\n        try {\n          cons"
+        }
+      ],
+      "recall_20k": {
+        "recalled": true,
+        "answer": "MAGIC-CANARY-7734",
+        "prompt_tokens": 21088
+      }
+    }
+  ],
+  "baseline_errors": [
+    "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+    "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+  ],
+  "finished": "07:58:12"
+}
