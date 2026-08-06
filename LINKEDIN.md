@@ -1,105 +1,158 @@
 # LinkedIn drafts
 
-Three options. All link to https://github.com/tarkesh2shar/LocalLLMsBench
+LinkedIn does not render Markdown. No `**bold**`, no `#` headings, no `-` bullets that
+turn into lists. What works: short lines, blank lines between them, and `→` or `•` as
+manual bullets.
+
+Everything below is copy-paste ready. Do not add formatting.
+
+Repo: https://github.com/tarkesh2shar/LocalLLMsBench
 
 ---
 
-## Option A — the hallucination hook (recommended, ~230 words)
+## OPTION A — "I published the wrong recommendation" (recommended)
 
-I benchmarked 9 local coding models on a 48 GB Mac. The rankings were the least
-interesting thing I found.
+~1,900 characters. Lead is the strongest thing we have: a public correction.
 
-One task kept defeating them. A TypeScript error: `'error' is declared but its value
-is never read`, at line 149. A one-line fix.
+```text
+I benchmarked 9 local coding models on a 48GB Mac, published a recommendation, then
+added 3 more tasks.
 
-8 of 9 configurations failed it. So I asked one to think out loud:
+The ranking inverted.
 
-"The error refers to line 149, which is `const error = localStorage.getItem('error')`"
+Round 1 was two real TypeScript build errors. Qwen3.6-35B swept it 4/4. Qwen3-Coder-30B
+scored 2/4. I wrote that Qwen3-Coder should be retired as a candidate.
 
-That line doesn't exist. Anywhere. The entire file was in its context window, and it
-invented the line — then reasoned flawlessly from a fabricated premise.
+Then I added three task kinds:
 
-The one model that got it right did something different:
+→ Fix a runtime bug from a failing test
+→ Implement a function against a spec test
+→ A clean file plus an error message I made up
 
-"line 149,16. Let's count lines? But easier: In handleCitySelect, we have catch..."
+Qwen3-Coder scored 5/5 on the new tasks.
+Qwen3.6-35B dropped to 3/5.
 
-It refused to resolve the line number and found the code semantically instead.
+Combined, they tie at 7/9 — but Qwen3-Coder used 5.4x fewer tokens and 5.3x less time.
 
-That's the whole difference. Not parameters, not benchmarks — one model doesn't trust
-line numbers and the others do.
+The model I told people to retire is the one I would actually deploy.
 
-Two follow-ups:
+Two tasks were not enough. My confident recommendation was wrong, and it took 40 more
+runs to find out.
 
-→ I added chain-of-thought prompting to fix it. The model got WORSE: 2/4 → 0/4. CoT
-launders a hallucination into a confident, well-argued wrong answer.
+The third task turned out to be the interesting one. Give a model a clean file and an
+error that does not exist, and only 2 of 8 handled it. The rest either burned their
+entire token budget searching (one spent 485 seconds per attempt), or invented a fix
+and edited a file that had nothing wrong with it.
 
-→ I tried higher precision. 6-bit produced byte-identical output to 5-bit. Not a
-quantization problem.
+One model, caught mid-reasoning, was numbering the lines of the file one by one trying
+to reach line 42. It ran out of budget before it got there.
 
-If you're routing work to a local model: don't send "error at line N". Send the
-function name and the actual snippet.
+If you are routing work to a local model: a stale or mistaken error message does not
+produce a fast "not found". It produces a multi-minute hang, or a confident edit to
+working code.
 
-Harness, fixture and raw data are public — 2 tasks, one repo, so treat the numbers as
-a starting point, not gospel.
+I also found three bugs in my own grader, each of which inflated scores. All three were
+found by reading raw model output. None were visible in the pass/fail column.
+
+Harness, fixture, raw results and the superseded numbers are all public. Five tasks on
+one repo — still a starting point, not a verdict.
+
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
 
 ---
 
-## Option B — the gotchas hook (~200 words)
+## OPTION B — the infrastructure gotchas
 
-Three things silently broke my local LLM benchmark before model quality mattered at
-all. None are documented well anywhere I could find.
+~1,500 characters. Better for a systems/infra audience. These findings were the hardest
+to find documented anywhere.
 
-1. MLX aborts if it finds the wrong MPI.
+```text
+Three things silently broke my local LLM benchmark before model quality mattered at all.
 
-`mlx_lm.server` dlopen()s libmpi.dylib. If that resolves to Anaconda's MPICH instead
-of Open MPI, it SIGABRTs before loading a single weight. DYLD_LIBRARY_PATH does NOT
-fix it — I verified the variable reaches the process. The knob that works is
-MLX_MPI_LIBNAME.
+1. MLX aborts if it finds the wrong MPI
 
-2. Prefill is the memory event, not the KV cache.
+mlx_lm.server dlopen()s libmpi.dylib. If that resolves to Anaconda's MPICH instead of
+Open MPI, it SIGABRTs before loading a single weight.
 
-A 74K-token prompt drove a 48 GB machine to within 4 GB of full — twice — while
-resident memory sat flat at 18.6 GiB. It's prefill activation buffers. Dropping
---prefill-step-size from 2048 to 512 made it both safer AND faster: peak available
-memory went 6→14.7 GiB, throughput 410→750 tok/s.
+DYLD_LIBRARY_PATH does not fix this. I verified the variable reaches the process.
+Reordering PATH does not fix it either.
 
-3. "sliding_window: 128" doesn't mean short memory.
+The knob that works is MLX_MPI_LIBNAME.
+
+2. Prefill is the memory event, not the KV cache
+
+A 74K-token prompt drove a 48GB machine to within 4GB of full, twice, while the server's
+resident memory sat flat at 18.6 GiB. It is prefill activation buffers, not accumulated
+cache.
+
+Dropping --prefill-step-size from 2048 to 512 made it both safer AND faster:
+→ available memory during prefill: 6 GiB to 14.7 GiB
+→ throughput: 410 to 750 tok/s
+
+If you model memory as weights + kv_per_token x context, you are missing the term that
+actually binds.
+
+3. "sliding_window: 128" does not mean short memory
 
 Common advice says a small sliding window disqualifies a model for long context.
-gpt-oss-20b has a 128-token window and recalled a token planted 20,000 tokens back —
-because 12 of its 24 layers are full attention. Screen on layer_types, not
-sliding_window. The naive check would reject gpt-oss, Gemma and Mistral.
 
-Full write-up and harness:
+gpt-oss-20b has a 128-token window and recalled a token planted 20,000 tokens back,
+because 12 of its 24 layers are full attention.
 
----
+Screen on layer_types, not sliding_window. The naive check rejects gpt-oss, Gemma and
+Mistral.
 
-## Option C — short and punchy (~110 words)
-
-Benchmarked 9 local coding models on a 48 GB Mac. Three findings that surprised me:
-
-→ Models hallucinate what's at "line 149" — with the file in their context. The one
-model that solved my hardest task did so by REFUSING to count lines and locating the
-code by function name instead.
-
-→ Chain-of-thought made the coder model worse. 2/4 → 0/4. It turns a fabricated
-premise into a confident, well-argued wrong answer.
-
-→ The #1 open-source model on SWE-bench came last. SWE-bench measures multi-turn work
-with test feedback. That's a different skill from one-shot bounded edits.
-
-Harness, fixture, and raw results are public. 2 tasks on 1 repo — a starting point,
-not a verdict.
+Full write-up, harness and raw data:
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
 
 ---
 
-## Notes on posting
+## OPTION C — short
 
-- LinkedIn shows ~3 lines before "see more". All three drafts front-load the hook.
-- LinkedIn suppresses reach on posts with outbound links. Consider putting the repo
-  link in the first comment and saying "link in comments".
-- No hashtag soup. If you want any: #LocalLLM #AppleSilicon #MLX
-- Option A is the strongest — a concrete surprise with a mechanism and a takeaway.
-  Option B will land better with an infra/systems audience.
-- Keep the "2 tasks, one repo" caveat in whichever you use. It costs one line and
-  removes the obvious line of attack.
+~700 characters. For low effort or as a follow-up post.
+
+```text
+Benchmarked 9 local coding models on a 48GB Mac. Three things I did not expect:
+
+→ I published a recommendation after 2 tasks. Added 3 more and the ranking inverted.
+The model I said to retire scored 5/5 and now uses 5x fewer tokens than the one I
+recommended.
+
+→ Give a model a clean file and a fabricated error, and 6 of 8 either hang for minutes
+or invent a fix and edit working code. One was numbering lines one by one trying to
+reach line 42.
+
+→ One model answered a "return the whole file" request with 57 tokens. Applied, it
+wiped 100 lines. The same model fixed the same bug via search/replace in 41 tokens.
+
+Harness and raw data:
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
+
+---
+
+## Posting notes
+
+**Formatting**
+- LinkedIn renders none of Markdown. Paste as plain text.
+- Blank line between every 1-2 lines. Dense paragraphs get skipped.
+- `→` and `•` survive paste. Asterisk bullets do not become lists.
+- First ~3 lines show before "see more" — all three drafts front-load the hook.
+
+**The link**
+- LinkedIn suppresses reach on posts with outbound links. Two options:
+  1. Post as-is and accept the hit (simplest, link is visible)
+  2. Remove the URL, end with "Link in comments", then immediately comment it
+- Option 2 reliably reaches further. Comment within the first minute.
+
+**Hashtags** — optional and low value. If any: #LocalLLM #MLX #AppleSilicon
+
+**Which to post**
+- A is strongest. A public "I was wrong" with numbers is rare and it is the real story.
+- B if your audience is infra/systems — those three findings are the most novel.
+- C as a follow-up a few days later, linking back.
+
+**Keep the caveat.** The "five tasks on one repo" line costs you nothing and removes the
+one fair criticism. Losing it is how a post gets picked apart in the comments.
