@@ -5,9 +5,11 @@ Everything here was run on macOS (Apple Silicon) with `mlx-lm` 0.31.3.
 ## 1. Prerequisites
 
 ```bash
-brew install open-mpi
+brew install open-mpi llama.cpp
 uv tool install mlx-lm
 ```
+
+`llama.cpp` is only needed for round 4 (models with no MLX build, e.g. Bonsai).
 
 `open-mpi` matters more than it looks: MLX `dlopen()`s `libmpi.dylib` and aborts if
 it resolves to Anaconda's MPICH. See "Troubleshooting" below.
@@ -127,6 +129,80 @@ for m in d["models"]:
     print(f'{m["model"].split("/")[-1]:<44}{p}/4  {tok:>6} tok  {sec:>6.0f}s')
 EOF
 ```
+
+### Round 3: speculative decoding (graded, not just timed)
+
+```bash
+python3 harness/bench_specdec.py
+```
+
+Runs the five tasks three ways — no drafter, drafter with 3 draft tokens, drafter with
+5 — plus a "count from 1 to 20" canary that makes token corruption obvious.
+
+Deliberately graded rather than timed, because corrupted output fails `tsc`/`vitest`.
+That measures whether speculative decoding is *usable*, not merely faster.
+
+**Check the pairing before you run it.** A drafter must satisfy three conditions, and
+Qwen3.6-27B fails all three:
+
+| Requirement | Check |
+|---|---|
+| drafter architecture implemented by mlx-lm | `screen_config.py` on the **drafter**, not just the target |
+| target's KV cache is trimmable | hybrid-attention models use `ArraysCache` — rejected |
+| matching vocab | `vocab_size` must be identical, not merely "same family" |
+
+```bash
+python3 -c "
+import json,glob
+for m in ['Qwen3-Coder-30B-A3B-Instruct-5bit','Qwen3-0.6B-4bit']:
+    f=glob.glob(f'{__import__(\"os\").path.expanduser(\"~\")}/.cache/huggingface/hub/models--mlx-community--{m}/snapshots/*/config.json')[0]
+    c=json.load(open(f)); t=c.get('text_config',c)
+    print(m, c['model_type'], t.get('vocab_size'))"
+```
+
+### Round 4: llama.cpp — isolating runtime from quantization
+
+```bash
+brew install llama.cpp
+python3 harness/bench_llamacpp.py qwen3.6    # control
+python3 harness/bench_llamacpp.py bonsai     # 1-bit
+```
+
+`llama_server.py` starts `llama-server` and reuses the same OpenAI client, so the tasks
+and grading are unchanged across runtimes.
+
+Run the **control first**. Comparing an MLX 4-bit model against a llama.cpp 1-bit model
+changes two variables at once; without the same-quantization control you cannot tell
+compression from runtime. Measured here: 14.8 vs 15.3 tok/s, 3/5 both — runtime neutral.
+
+One invocation per model keeps a single model resident. Results **merge** into
+`results-llamacpp.json` rather than overwriting (an earlier version overwrote, and
+destroyed the control arm's data).
+
+### Downloading GGUFs
+
+`huggingface_hub` stalled at 68 KB/s here while `curl` sustained 12 MB/s to the same
+URL — a 175× difference. If HF downloads crawl:
+
+```bash
+curl -L -C - -o model.gguf "https://huggingface.co/<repo>/resolve/main/<file>.gguf"
+```
+
+Repos often hold every quantization (80 GB for all of `Ternary-Bonsai-27B-gguf`), so
+fetch **single files**, not snapshots.
+
+**Verify after download.** A resumed transfer can produce a full-size but corrupt file:
+
+```bash
+head -c 4 model.gguf   # must be "GGUF"
+llama-cli -m model.gguf -p hi -n 1 --no-warmup
+```
+
+A `tensor '<name>' has offset X, expected Y` error on a *freshly downloaded,
+size-verified* file is not corruption — it means the quant type's block layout differs
+from what your llama.cpp build expects. `Ternary-Bonsai-27B-Q2_0.gguf` fails this way
+on upstream llama.cpp despite `Q2_0` appearing in `llama-quantize --help`. A quant name
+being listed does not mean an arbitrary file claiming that name will load.
 
 ---
 
