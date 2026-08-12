@@ -133,6 +133,157 @@ https://github.com/tarkesh2shar/LocalLLMsBench
 
 ---
 
+## ROUND 8 — Muse Glimmer 30B (2026-08-12)
+
+### OPTION A — "best score, still not deploying it" (recommended)
+
+~2,100 characters. The tension is real and it is the honest read.
+
+```text
+A 30B model running in 12GB of RAM just posted the best score my local benchmark has
+ever recorded.
+
+I am still not making it my default.
+
+Meta shipped Muse Glimmer 30B open on August 10. Unsloth's 2-bit build is 12.4GB on
+disk. I ran it on an M5 Pro with 48GB unified memory, through llama.cpp on Metal.
+
+12.3 GiB resident. 20 tokens/sec. Nine graded tasks: fix a type error, fix a runtime
+bug from a failing test, implement against a spec, and a trap where the file is clean
+and the error is one I made up.
+
+9/9 sampled. 8/9 greedy.
+
+Previous best was Seed-OSS-36B at 8/9. My current daily driver, Qwen3-Coder-30B, scores
+7/9.
+
+It also solved the one task that had beaten everything.
+
+A file where "error" is both a useState variable and a catch parameter. The compiler
+points at line 149. Every model that failed it fabricated the contents of that line and
+then reasoned correctly from an invented premise. Qwen3-Coder failed it in every
+configuration I tried — plain, chain-of-thought, 5-bit, 6-bit.
+
+Glimmer got it. Both edit strategies, sampled and greedy.
+
+So why am I not switching?
+
+→ 872 seconds vs 99 for the same five tasks. Roughly 9x.
+→ On a multi-turn repair loop: 333 seconds vs 11.5. Roughly 29x.
+→ Hand it failing tests without file names and it fixed one bug, then re-ran the test
+suite 24 times in a row until it hit the turn cap. Qwen3-Coder solves that in 9 turns.
+
+Cost is zero on local hardware. Wall clock is the entire budget. A 9x tax buys two
+graded points.
+
+Where it does win outright: 13 KiB per token of KV cache against Qwen3-Coder's 96. That
+is 7x more context headroom on the same machine, and it changes how many agents you can
+run at once.
+
+And the tool calling is genuinely clean — 52 of 52 turns emitted well-formed structured
+calls, zero malformed arguments. It ran the test suite to confirm the bug was real
+before touching a file. None of the 8 models I tested previously did that.
+
+Then I gave it a bug that does not exist.
+
+It read the code, ran the suite, saw 26 passing tests, changed nothing — and reported
+the job complete.
+
+No damage. No invented fix. Just a worker that says done and hands back an empty diff.
+Qwen3-Coder reaches the same place by a worse route: it emits a search/replace where
+both halves are byte-identical, then declares success.
+
+Different models. Different failure. Same ledger entry.
+
+If you are building on local agents: do not trust "done". Diff the result.
+
+One repo, one run per arm, 2-bit only. Vision and prompt injection untested.
+
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
+
+---
+
+### OPTION B — the reproducibility correction
+
+~1,400 characters. Systems audience. This one stings and is the most useful.
+
+```text
+I found out half my benchmark was never reproducible, 40 runs after I published it.
+
+I have been comparing local models on a 48GB Mac across two servers: mlx_lm.server for
+models with MLX builds, llama-server for the ones without.
+
+mlx_lm.server defaults to temperature 0.0. Greedy. Identical prompt, identical output.
+
+llama-server defaults to temperature 0.8, top_k 40, top_p 0.95, random seed.
+
+Neither of my wrappers sends a sampling parameter. So every MLX run was deterministic
+and every llama.cpp run was sampled, and I had labelled all of them reproducible.
+
+I caught it because the same prompt replayed at 3,658 then 4,313 completion tokens.
+
+Check GET /props. Do not assume the default is greedy.
+
+Two more from the same run:
+
+1. Budget agent turns generously for a reasoning model
+
+At 1,200 tokens per turn my tool-calling loop looked broken — turns arriving with no
+tool call at all.
+
+It was not a tool-calling failure. The turn was truncating, and after a truncated turn
+the model started writing a sentence before its call. llama.cpp parses the call when it
+is the whole message, not when prose precedes it. The call arrived structurally perfect
+and sitting in the wrong field.
+
+At 3,000 tokens: 52 of 52 parsed.
+
+Treat finish_reason: length in an agent loop as a hard error. A truncated turn corrupts
+the shape of the turns after it.
+
+2. My own grader scored a correct fix as 0/4
+
+The runner never populated its baseline error set, so a pre-existing error in a file the
+model never opened counted as damage. The textbook correct fix graded as a failure.
+
+That is the fourth grader bug in this project. Every one was found by reading raw model
+output. None were visible in the pass/fail column.
+
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
+
+---
+
+### OPTION C — short
+
+~800 characters.
+
+```text
+Meta's Muse Glimmer 30B, 2-bit, running in 12GB on an M5 Pro with 48GB unified memory.
+
+Best score my local benchmark has recorded: 9/9 sampled, 8/9 greedy. Previous best 8/9.
+Qwen3-Coder-30B, my daily driver, is 7/9.
+
+It solved the task nothing else could — a shadowed identifier where every other model
+hallucinated the contents of the line the compiler pointed at.
+
+I am still not switching.
+
+→ 9x slower single-shot, 29x on a multi-turn repair loop
+→ 20 tok/s against Qwen3-Coder's 65
+→ Give it failing tests without file names and it loops the test suite 24 times
+
+What it wins: 13 KiB/token of KV cache against 96. Seven times the context headroom.
+
+And handed a bug that does not exist, it changed nothing and reported the job complete.
+The better model still hands you an empty diff and calls it done.
+
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
+
+---
+
 ## Posting notes
 
 **Formatting**
