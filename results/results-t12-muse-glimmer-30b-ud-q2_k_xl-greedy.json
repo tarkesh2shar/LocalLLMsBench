@@ -1,0 +1,101 @@
+{
+  "model": "muse-glimmer-30b-ud-q2_k_xl-greedy",
+  "started": "2026-08-12 07:42:26",
+  "note": "T1/T2 only, run against an external server",
+  "baseline_errors": [
+    "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+    "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+  ],
+  "runs": [
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 4484,
+      "elapsed_s": 221.75,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 12092,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/ForecastCard';\nimport HourlyChart from './components/HourlyChart';\nimport SavedLocations from './components/SavedLocations';\nimport ThemeToggle from './components/ThemeToggle';\nimport TemperatureToggle from './components/TemperatureToggle';\nimport { WeatherData, GeocodingResult, SavedLocation } from './types';\nimport { WeatherService } from './services/weatherService';\n\nconst App: React.FC = () => {",
+      "reasoning_preview": "You are fixing one specific TypeScript build error in a React project.\n\nFILE: src/App.tsx\n...\nBUILD ERROR TO FIX:\nsrc/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.\n\nACCEPTANCE CRITERIA: TS6133 in App.tsx is gone and no new type errors appear.\n\nFix ONLY this error. Do not refactor anything else. Do not change behaviour.\nOutput the COMPLETE corrected file inside a single ```tsx fenced code block.\nOutput nothing else.\n\nError TS6133: 'error' is declared but its value is never read.\n\nLine 149,16. Let's see code.\n\nLine numbers? Let's count.\n\nWe have handleCitySelect = async (city: GeocodingResult) => {\n setLoading(true);\n setError(null);\n \n try {\n   const data = await WeatherService.getWeatherData(city.latitude, city.longitude);\n   setWeatherData(data);\n   setCurrentLocation(city);\n } catch (error: any) {\n   setError('Failed to fetch weather data. Please try again.');\n   console.error('Error fetching weather data:', error);\n } finally {\n   setLoading(false);\n }\n};\n\nLine 149,16 is catch (error: any). The error variable is declared but never read. Actually it is used in console.error. Wait console.error('Error fetching weather data:', error); So it is read. Hmm maybe TypeScript complains about catch parameter? Actually TS6133 is unused variable. The variable error is declared but its value is never read. But it is used in console.error. Hmm maybe the line number is 149,16 which is the catch (error: any). Maybe the error variable is shadowed? Wait the"
+    },
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 3819,
+      "elapsed_s": 187.76,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 16300,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n=======\n        .catch(() => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n>>>>>>> REPLACE",
+      "reasoning_preview": "You are fixing one specific TypeScript build error in a React project.\n\nFILE: src/App.tsx\n...\nBUILD ERROR TO FIX:\nsrc/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.\n\nACCEPTANCE CRITERIA: TS6133 in App.tsx is gone and no new type errors appear.\n\nFix ONLY this error. Do not refactor anything else. Do not change behaviour.\nOutput a SINGLE edit in exactly this format, and nothing else:\n\n<<<<<<< SEARCH\n(the exact original lines to find, copied verbatim)\n=======\n(the replacement lines)\n>>>>>>> REPLACE\n\nWe need find line 149,16 error TS6133: 'error' is declared but its value is never read.\n\nLet's count lines. The file starts at import... Let's approximate.\n\nWe have handleCitySelect = async (city: GeocodingResult) => {\n setLoading(true);\n setError(null);\n \n try {\n   const data = await WeatherService.getWeatherData(city.latitude, city.longitude);\n   setWeatherData(data);\n   setCurrentLocation(city);\n } catch (error: any) {\n   setError('Failed to fetch weather data. Please try again.');\n   console.error('Error fetching weather data:', error);\n } finally {\n   setLoading(false);\n }\n};\n\nLine numbers? Let's count roughly.\n\n1 import React...\n2 import SearchBar...\n...\nLet's count more precisely.\n\nI'll copy file lines with numbers.\n\n1 import React, { useState, useEffect } from 'react';\n2 import SearchBar from './components/SearchBar';\n3 import WeatherCard from './components/WeatherCard';\n4 import ForecastCard from './components/ForecastCard';\n5 import HourlyCh"
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 1808,
+      "elapsed_s": 88.31,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 4540,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n  onCitySelect: (city: GeocodingResult) => void;\n}\n\nconst SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {\n  const [query, setQuery] = useState('');\n  const [results, setResults] = useState<GeocodingResult[]>([]);\n  const [isLoading, setIsLoading] = useState(false);\n  const [showResults, setShowResults] = useState(false);\n  const searchRef = useRef<HTMLDivElement>(null);\n\n  useEffect(",
+      "reasoning_preview": "You are fixing one specific TypeScript build error in a React project.\n\nFILE: src/components/SearchBar.tsx\n...\nBUILD ERROR TO FIX:\nsrc/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'.\n\nACCEPTANCE CRITERIA: TS2503 in SearchBar.tsx is gone and no new type errors appear.\n\nFix ONLY this error. Do not refactor anything else. Do not change behaviour.\nOutput the COMPLETE corrected file inside a single ```tsx fenced code block.\nOutput nothing else.\n\nWe need fix NodeJS.Timeout type. Cannot find namespace 'NodeJS'. Common fix: use ReturnType<typeof setTimeout> or NodeJS.Timeout replaced with number? In browser, setTimeout returns number. NodeJS.Timeout is Node type. Could use `let timeoutId: ReturnType<typeof setTimeout>;` or `let timeoutId: number | undefined;` or `let timeoutId: NodeJS.Timeout | undefined` but namespace missing.\n\nSimplest: change type to `ReturnType<typeof setTimeout>` or `number`. The code uses setTimeout with async arrow. TimeoutId is NodeJS.Timeout. Error TS2503 Cannot find namespace 'NodeJS'.\n\nWe can replace type with `let timeoutId: ReturnType<typeof setTimeout>;` or `let timeoutId: any`. Better to use `let timeoutId: number;`? In TS lib dom, setTimeout returns number. In Node, returns Timeout.\n\nWe can just change to `let timeoutId: ReturnType<typeof setTimeout>;` That works.\n\nOr change to `let timeoutId: any` but maybe not ideal.\n\nAlso need to ensure clearTimeout works. ReturnType<typeof setTimeout> is fine.\n\nAlternative: use `let "
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 1547,
+      "elapsed_s": 75.17,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 6498,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n    let timeoutId: NodeJS.Timeout;\n=======\n    let timeoutId: ReturnType<typeof setTimeout>;\n>>>>>>> REPLACE",
+      "reasoning_preview": "You are fixing one specific TypeScript build error in a React project.\n\nFILE: src/components/SearchBar.tsx\n...\nBUILD ERROR TO FIX:\nsrc/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'.\n\nACCEPTANCE CRITERIA: TS2503 in SearchBar.tsx is gone and no new type errors appear.\n\nFix ONLY this error. Do not refactor anything else. Do not change behaviour.\nOutput a SINGLE edit in exactly this format, and nothing else:\n\n<<<<<<< SEARCH\n(the exact original lines to find, copied verbatim)\n=======\n(the replacement lines)\n>>>>>>> REPLACE\n\nWe need to fix error TS2503: Cannot find namespace 'NodeJS'.\n\nThe code has:\nlet timeoutId: NodeJS.Timeout;\n\nNodeJS.Timeout is not found. Common fix: use ReturnType<typeof setTimeout> or NodeJS.Timeout but need types. In TypeScript DOM lib, setTimeout returns number. NodeJS.Timeout is from Node types. Could change to `let timeoutId: NodeJS.Timeout;` to `let timeoutId: ReturnType<typeof setTimeout>;` or `let timeoutId: number` or `let timeoutId: any`.\n\nBetter to use `let timeoutId: ReturnType<typeof setTimeout>;` or `let timeoutId: number`.\n\nThe error is at line 30,20. Let's see code:\n\nuseEffect(() => {\n    let timeoutId: NodeJS.Timeout;\n    \n    if (query.length > 1) {\n      setIsLoading(true);\n      timeoutId = setTimeout(async () => {\n...\n      }, 300);\n    } else {\n      setResults([]);\n    }\n\n    return () => clearTimeout(timeoutId);\n  }, [query]);\n\nWe need to replace NodeJS.Timeout with something valid.\n\nSimplest: change type"
+    }
+  ],
+  "score": "4/4",
+  "finished": "2026-08-12 07:52:01"
+}

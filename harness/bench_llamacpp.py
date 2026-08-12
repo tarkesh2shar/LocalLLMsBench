@@ -36,6 +36,24 @@ PORT = 8095
 
 MODELS = [
     # (label, gguf path, extra llama-server args)
+    # Muse-Glimmer-30B (Meta, 2026-08-10). Dense 30B + 1.8B vision encoder, no MLX
+    # support in mlx-lm 0.31.3 (model_type `muse_glimmer`), so llama.cpp is the only
+    # runtime available here. --jinja is required: it is a tool-calling model whose
+    # chat template carries the tool/function-call grammar.
+    #
+    # SAMPLING WARNING, and it applies to every llama.cpp arm in this file.
+    # llama-server's defaults are temp 0.8 / top_k 40 / top_p 0.95 / min_p 0.05
+    # with a random seed -- confirmed via GET /props. mlx_lm.server defaults to
+    # --temp 0.0, and neither llama_server.start_server nor mlx_server.chat sends
+    # any sampling parameter. So the MLX arms in this project are greedy and
+    # reproducible while the llama.cpp arms (Qwen3.6-27B Q4_0, both Bonsai builds,
+    # the MTP runs) were NOT -- contrary to the reproducibility caveat recorded
+    # with them. Caught when an identical T1 prompt replayed at 3,658 then 4,313
+    # completion tokens.
+    ("muse-glimmer-30b-ud-q2_k_xl",           # llama-server defaults (temp 0.8)
+     GGUF / "Muse-Glimmer-30B-UD-Q2_K_XL.gguf", ["--jinja"]),
+    ("muse-glimmer-30b-ud-q2_k_xl-greedy",    # comparable to the MLX arms
+     GGUF / "Muse-Glimmer-30B-UD-Q2_K_XL.gguf", ["--jinja", "--temp", "0", "--top-k", "1"]),
     ("qwen3.6-27b-gguf-q4_0", GGUF / "Qwen3.6-27B-Q4_0.gguf", []),
     ("bonsai-27b-1bit-q1_0", BONSAI_Q1, []),
     # NB: use the _g64 (group-64) build. Bonsai's plain Q2_0 is group-128 and

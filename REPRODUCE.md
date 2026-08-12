@@ -284,6 +284,57 @@ Two traps specific to writing this kind of arm:
 Results in `results/results-e5e.json`; the superseded first round is kept in
 `results/results-e5e-round1.json`.
 
+### Round 8: native tool calling, and a model with no MLX build
+
+Muse-Glimmer-30B (Meta, 2026-08-10) is the first candidate whose claimed strength is
+tool calling rather than coding, and `mlx-lm` 0.31.3 cannot load it (`model_type:
+muse_glimmer`), so it runs on llama.cpp only. Two harnesses exist because of that.
+
+```bash
+# 1. screen the config before downloading 12 GB
+python3 harness/screen_config.py meta-models/Muse-Glimmer-30B
+
+# 2. the five vitest/tsc-graded tasks (starts and stops its own llama-server)
+python3 harness/bench_llamacpp.py glimmer
+
+# 3. T1/T2 against a server you started yourself
+llama-server -m ~/models/gguf/Muse-Glimmer-30B-UD-Q2_K_XL.gguf \
+  --host 127.0.0.1 --port 8095 -c 32768 -ngl 999 --no-webui --jinja \
+  --temp 0 --top-k 1 --parallel 1
+python3 harness/bench_t12_external.py --port 8095 --label glimmer
+
+# 4. the same fixtures and briefs as round 7, but with native OpenAI `tools`
+python3 harness/bench_toolcall.py --port 8095 --label glimmer --max-tokens 3000
+```
+
+`bench_t12_external.py` exists because `bench.py` owns its own MLX server, so a model
+with no MLX build could not be scored on T1/T2 at all. **It must populate
+`bench.BASELINE` itself** — that is filled inside `bench.main()`, and leaving it empty
+makes the *other* pre-existing error, in a file the model never touched, count as
+damage. That scored a canonical correct fix as 0/4 on the first run.
+
+`bench_toolcall.py` changes exactly one variable against round 7: the model is handed
+OpenAI-format `tools` and must emit structured `tool_calls` instead of text commands.
+It adds a `malformed_calls` metric a regex-parsed protocol cannot express.
+
+Two things will bite you:
+
+1. **Budget agent turns at 3,000+ tokens for a reasoning model.** At 1,200 a turn
+   truncates (`finish_reason: length`), and after a truncated turn the model starts
+   emitting a commentary preamble, `<|eom|>`, then a second message carrying the call.
+   llama.cpp parses that header when it is the whole message but not when a preamble
+   precedes it, so the call arrives structurally perfect and sitting in `content` with
+   `tool_calls: []`. At 3,000 tokens this vanishes entirely: 52/52 turns parsed. Treat
+   `finish_reason: length` in an agent loop as a hard error — a truncated turn corrupts
+   the shape of the turns after it. `--recover` enables a fallback extractor for the
+   truncated case; it is off by default because it measures around a real problem.
+2. **Raise `-c`.** A trap arm's re-verification loop ran itself out of a 16K context
+   (`request (16458 tokens) exceeds the available context size`). 32K is enough.
+
+Results in `results/results-toolcall-*.json` (full per-turn output and tool calls
+retained), `results/results-t12-muse-glimmer-*.json`, and the `muse-glimmer-*` arms of
+`results/results-llamacpp.json`.
+
 ---
 
 ## Editing the benchmark
@@ -366,7 +417,16 @@ confirm. Either raise `MAX_TOKENS` or disable thinking:
 
 ### Results differ from mine
 
-Expected across `mlx-lm` versions, quantizations, and model revisions. Within one
-setup runs are deterministic — `mlx_lm.server` defaults to `--temp 0.0`, so identical
-requests give byte-identical output. If your results move *within* one setup, check
-whether your client is sending a temperature.
+Expected across `mlx-lm` versions, quantizations, and model revisions.
+
+**Determinism depends on which server you are running, and the two disagree.**
+`mlx_lm.server` defaults to `--temp 0.0`, so MLX runs are greedy and identical requests
+give byte-identical output. **`llama-server` does not**: its defaults are temp 0.8 /
+top_k 40 / top_p 0.95 / min_p 0.05 with a random seed — check with `GET /props`. Neither
+`llama_server.start_server` nor `mlx_server.chat` sends a sampling parameter, so every
+llama.cpp arm in this repo ran sampled unless its label says `-greedy`. Pass
+`--temp 0 --top-k 1` to reproduce those.
+
+This was caught late, by an identical prompt replaying at 3,658 then 4,313 completion
+tokens. If your results move *within* one setup, check the server's defaults before
+your client's.

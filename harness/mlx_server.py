@@ -153,7 +153,13 @@ def chat(port, messages, max_tokens=800, timeout=1800, stall_timeout=300,
         with urllib.request.urlopen(req, timeout=timeout) as r:
             data = json.loads(r.read())
     except urllib.error.HTTPError as e:
-        return {"ok": False, "error": f"HTTP {e.code}: {e.read()[:300].decode('replace')}"}
+        # NB: bytes.decode's first positional arg is the ENCODING, not the error
+        # handler -- `.decode('replace')` raises LookupError: unknown encoding,
+        # which turned every HTTP error into an unhandled crash instead of the
+        # `{"ok": False}` this function promises. Latent until a server actually
+        # returned 4xx.
+        return {"ok": False,
+                "error": f"HTTP {e.code}: {e.read()[:300].decode('utf-8', 'replace')}"}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
@@ -164,6 +170,9 @@ def chat(port, messages, max_tokens=800, timeout=1800, stall_timeout=300,
         # thinking models may put everything here and omit `content` entirely
         "reasoning": msg.get("reasoning_content") or msg.get("reasoning") or "",
         "message_keys": list(msg.keys()),
+        # native function calling (bench_toolcall.py). Stays [] for every model
+        # and harness that does not use the `tools` parameter.
+        "tool_calls": msg.get("tool_calls") or [],
         "finish": data["choices"][0].get("finish_reason"),
         "usage": data.get("usage", {}),
         "elapsed": round(time.time() - t0, 2),
@@ -199,7 +208,13 @@ def chat_stream(port, messages, max_tokens=800, stall_timeout=300,
     try:
         resp = urllib.request.urlopen(req, timeout=stall_timeout)
     except urllib.error.HTTPError as e:
-        return {"ok": False, "error": f"HTTP {e.code}: {e.read()[:300].decode('replace')}"}
+        # NB: bytes.decode's first positional arg is the ENCODING, not the error
+        # handler -- `.decode('replace')` raises LookupError: unknown encoding,
+        # which turned every HTTP error into an unhandled crash instead of the
+        # `{"ok": False}` this function promises. Latent until a server actually
+        # returned 4xx.
+        return {"ok": False,
+                "error": f"HTTP {e.code}: {e.read()[:300].decode('utf-8', 'replace')}"}
     except Exception as e:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
