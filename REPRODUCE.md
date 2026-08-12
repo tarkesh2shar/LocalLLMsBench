@@ -243,6 +243,47 @@ whole-file reply *replaces* the file — the failure anchor edits structurally c
 
 Results in `results/results-e5.json`.
 
+### Round 7: a false objective in a multi-turn loop
+
+```bash
+python3 harness/e5e_trap_multiturn.py --setup      # build the two fixtures
+python3 harness/e5e_trap_multiturn.py --suite=all
+```
+
+Five of the eight arms run against a repo where **all 26 tests already pass** and the
+brief is wrong — either a bug that has never existed, or round 5's brief verbatim against
+a repo where every bug it names is already fixed. Plus a positive control and an
+isolation of *which block* of the brief carries the effect.
+
+`--setup` derives `e5e_workspace/{buggy,healthy}` from round 5's pristine fixture and
+refuses to continue unless they report 3 and 0 failures respectively.
+
+Three things this harness records that rounds 5 and 6 did not, each because of a real bug:
+
+- **`finish_reason` on every completion.** On a trap task "produced no edit" and
+  "correctly declined" are indistinguishable without it.
+- **The full raw reply per turn**, not `reply.split("\n")[0][:80]`. Rounds 5 and 6 were
+  truncating away a stray `>>>>>>> REPLACE` the model appended to nearly every command;
+  a `TEST` costing 5 tokens instead of 2 was the only trace of it.
+- **No-op edits as a distinct kind.** Every trap arm emitted an `EDIT` whose SEARCH and
+  REPLACE bodies were byte-identical. A permissive applier answers `Edited <file>.` and
+  the model builds on that false success. `_noopdet` arms answer honestly instead — it
+  did not change the outcome, which is itself the result.
+
+Two traps specific to writing this kind of arm:
+
+1. **Do not give an escape-hatch verb an example.** The first version documented
+   `REPORT` with `Example: REPORT blocked, the build tooling is not installed`. The model
+   emitted that sentence verbatim to abandon a real, half-finished repair. Remove the
+   example and the same arm solves the task.
+2. **Keep the system prompt's tail byte-identical to round 5's.** Inserting the new verb
+   *between* the EDIT block and `DONE` made the model append 1,200 tokens of repeated
+   `>>>>>>> REPLACE` after every command. Inserting it *above* EDIT — same text, same
+   verbs — dropped that to 7 tokens with an identical decision trace.
+
+Results in `results/results-e5e.json`; the superseded first round is kept in
+`results/results-e5e-round1.json`.
+
 ---
 
 ## Editing the benchmark
