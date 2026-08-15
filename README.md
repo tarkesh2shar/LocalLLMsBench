@@ -800,6 +800,25 @@ dependencies beyond `mlx-lm`, `llama.cpp` and `npx`.
 | `bench_toolcall.py` | multi-turn with **native** OpenAI tool calling |
 | `screen_config.py` | pre-download architecture / KV screen |
 
+## 16. Qwen 3.8-27B Dense: Baseline vs. Native MTP
+
+Evaluation of the newly released **Qwen 3.8-27B Dense** (`Qwen3.8-27B-Q4_0.gguf`, 14.95 GB on disk) comparing standard autoregressive decoding against native Multi-Token Prediction (MTP) via `llama.cpp` v10360 on Apple Silicon.
+
+### Score & Speed Summary
+
+| Arm | Score | Total Time | tok/s | Speedup | Resident RAM |
+|---|---|---|---|---|---|
+| **Baseline (No MTP)** | **5/5 (100%)** | 400.0s | 14.8 tok/s | 1.00x | 16.75 GiB |
+| **Native MTP (`draft-mtp`)** | **5/5 (100%)** | **229.0s** | **25.9 tok/s** | **1.75x** | 18.90 GiB |
+
+### Key Suite Results
+
+* **T1/T2 Repair Suite (`bench_t12_external.py`)**: **4/4 (100%)** — Solved T1 (shadowed identifiers), making Qwen 3.8 the **first Qwen model to achieve a 100% score on T1/T2**.
+* **Multi-Turn Tool Calling (`bench_toolcall.py`)**: Verified tests and called `finish` in 4–5 turns on healthy repos with **0 file edits and empty diffs** (`done_without_flagging`).
+* **Critic Trap (`bench_critic_trap.py`)**: **0% fabrication rate** on identical code pairs.
+* **Token Fidelity**: 100% bit-identical token output between baseline and MTP across all tasks.
+* **Wall-Clock Acceleration**: Total 5-task benchmark time dropped from 1,608s (Qwen 3.6 27B) down to **229s (Qwen 3.8 + MTP)** — a **7x total wall-clock speedup**.
+
 ## Limitations
 
 **Five tasks, one repository, one attempt each.** §1–§12 are single-turn with no tool

@@ -54,6 +54,8 @@ MODELS = [
      GGUF / "Muse-Glimmer-30B-UD-Q2_K_XL.gguf", ["--jinja"]),
     ("muse-glimmer-30b-ud-q2_k_xl-greedy",    # comparable to the MLX arms
      GGUF / "Muse-Glimmer-30B-UD-Q2_K_XL.gguf", ["--jinja", "--temp", "0", "--top-k", "1"]),
+    ("qwen3.8-27b-gguf-q4_0", GGUF / "Qwen3.8-27B-Q4_0.gguf", ["--temp", "0", "--top-k", "1"]),
+    ("qwen3.8-27b-gguf-q4_0-mtp", GGUF / "Qwen3.8-27B-Q4_0.gguf", ["--spec-type", "draft-mtp", "--temp", "0", "--top-k", "1"]),
     ("qwen3.6-27b-gguf-q4_0", GGUF / "Qwen3.6-27B-Q4_0.gguf", []),
     ("bonsai-27b-1bit-q1_0", BONSAI_Q1, []),
     # NB: use the _g64 (group-64) build. Bonsai's plain Q2_0 is group-128 and

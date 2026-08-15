@@ -1,0 +1,101 @@
+{
+  "model": "qwen3.8-27b-mtp",
+  "started": "2026-08-15 11:53:45",
+  "note": "T1/T2 only, run against an external server",
+  "baseline_errors": [
+    "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+    "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+  ],
+  "runs": [
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 2169,
+      "elapsed_s": 77.04,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 1545,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/ForecastCard';\nimport HourlyChart from './components/HourlyChart';\nimport SavedLocations from './components/SavedLocations';\nimport ThemeToggle from './components/ThemeToggle';\nimport TemperatureToggle from './components/TemperatureToggle';\nimport { WeatherData, GeocodingResult, SavedLocation } from './types';\nimport { WeatherService } from './services/weatherService';\n\nconst App: React.FC = () => {",
+      "reasoning_preview": "We need answer user's request. Need fix TS6133 at line 149,16: 'error' is declared but its value is never read. Need output complete corrected file in single tsx fenced code block, nothing else.\n\nNeed analyze code. The error line 149? Let's count. In handleLoadSavedLocation:\n    setTimeout(() => {\n      WeatherService.getWeatherData(location.latitude, location.longitude)\n        .then(data => {\n          setWeatherData(data);\n          setLoading(false);\n        })\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n    }, 500);\n\nLine 149 likely .catch(error => { ... }) where error unused. TS6133 'error' declared but never read. Fix by removing parameter or using underscore? In TypeScript noUnusedParameters? If parameter unused, can omit: .catch(() => { ... }). That's minimal. Does not change behavior. Need ensure no new type errors. .catch callback can have no args. Good.\n\nNeed output complete file with that change only. Ensure no other changes. Need maybe line 149,16 is error in catch? Yes.\n\nNeed consider if there are other unused? The build error only one. We should not refactor. Just change .catch(error => { to .catch(() => { .\n\nNeed output only code block. Ensure imports etc unchanged.\n\nDouble-check file: In handleCitySelect catch (error: any) uses console.error, so used. In load saved catch error unused. Remove.\n\nPotential issue: If noUnusedLocals? Not relevant. If .catch(() =>) okay.\n"
+    },
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 2661,
+      "elapsed_s": 96.5,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 9667,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n        .catch(error => {\n=======\n        .catch(() => {\n>>>>>>> REPLACE",
+      "reasoning_preview": "We need answer user's request. Need produce single edit in exact format. Need fix TS6133 at line 149 col 16: 'error' is declared but its value is never read.\n\nNeed inspect code. Line numbers? Let's count roughly. The error likely in handleLoadSavedLocation catch(error => { ... })? Let's locate line 149. Need exact original lines. Let's count lines from provided code.\n\n1 import React, { useState, useEffect } from 'react';\n2 import SearchBar from './components/SearchBar';\n3 import WeatherCard from './components/WeatherCard';\n4 import ForecastCard from './components/ForecastCard';\n5 import HourlyChart from './components/HourlyChart';\n6 import SavedLocations from './components/SavedLocations';\n7 import ThemeToggle from './components/ThemeToggle';\n8 import TemperatureToggle from './components/TemperatureToggle';\n9 import { WeatherData, GeocodingResult, SavedLocation } from './types';\n10 import { WeatherService } from './services/weatherService';\n11 (blank)\n12 const App: React.FC = () => {\n13   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);\n14   const [loading, setLoading] = useState(false);\n15   const [error, setError] = useState<string | null>(null);\n16   const [temperatureUnit, setTemperatureUnit] = useState<'celsius' | 'fahrenheit'>('celsius');\n17   const [theme, setTheme] = useState<'light' | 'dark'>('light');\n18   const [savedLocations, setSavedLocations] = useState<SavedLocation[]>([]);\n19   const [currentLocation, setCurrentLocation] = useState<Ge"
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 5683,
+      "elapsed_s": 245.09,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 21297,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n  onCitySelect: (city: GeocodingResult) => void;\n}\n\nconst SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {\n  const [query, setQuery] = useState('');\n  const [results, setResults] = useState<GeocodingResult[]>([]);\n  const [isLoading, setIsLoading] = useState(false);\n  const [showResults, setShowResults] = useState(false);\n  const searchRef = useRef<HTMLDivElement>(null);\n\n  useEffect(",
+      "reasoning_preview": "We need answer user's request. Need output only corrected file in tsx fenced block, nothing else. Need fix TS2503 Cannot find namespace 'NodeJS' at line 30: let timeoutId: NodeJS.Timeout; in SearchBar.tsx. Need not refactor, no new type errors. Options: use ReturnType<typeof setTimeout> instead of NodeJS.Timeout. In browser TS, setTimeout returns number, Node returns Timeout. Using ReturnType<typeof setTimeout> is standard and avoids NodeJS namespace. Need ensure clearTimeout accepts it. Yes. Could also import type { Timeout } from 'node' but may require @types/node. Better ReturnType<typeof setTimeout>. Need complete file. Check other potential type errors? GeocodingResult imported, WeatherService. Need ensure no new errors. The code uses event.target as any, okay. useRef<HTMLDivElement>(null) okay. React.FC. Need maybe timeoutId could be undefined? In useEffect, let timeoutId: ReturnType<typeof setTimeout>; if query.length > 1 assign; else not. return () => clearTimeout(timeoutId); If timeoutId is undefined, clearTimeout(undefined) is allowed? TypeScript lib dom clearTimeout(id?: number) yes. If Node types, clearTimeout(timeout?: NodeJS.Timeout) maybe. ReturnType<typeof setTimeout> may be number or Timeout depending lib. clearTimeout accepts same? In TS DOM lib, setTimeout returns number, clearTimeout(id?: number). In Node types, setTimeout returns NodeJS.Timeout, clearTimeout accepts NodeJS.Timeout? If both libs? ReturnType<typeof setTimeout> is robust. But if timeoutId de"
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 2761,
+      "elapsed_s": 124.91,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 11360,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n    let timeoutId: NodeJS.Timeout;\n=======\n    let timeoutId: ReturnType<typeof setTimeout> | undefined;\n>>>>>>> REPLACE",
+      "reasoning_preview": "We need answer user's request. Need produce single edit in exact format. Need fix TS2503 Cannot find namespace 'NodeJS' in SearchBar.tsx line 30 col 20. Original line:\n    let timeoutId: NodeJS.Timeout;\nNeed replace with something that doesn't use NodeJS namespace and no new type errors. In browser TS, setTimeout returns number in DOM lib, but if @types/node present maybe NodeJS.Timeout. To avoid namespace, can use ReturnType<typeof setTimeout>. That's standard. Need ensure no new errors. Line: let timeoutId: ReturnType<typeof setTimeout>;\nThen clearTimeout(timeoutId) works? clearTimeout accepts number or NodeJS.Timeout? In TS DOM lib clearTimeout(id?: number). If ReturnType<typeof setTimeout> is number in DOM, ok. If @types/node, ReturnType<typeof setTimeout> is NodeJS.Timeout, clearTimeout accepts that? In @types/node clearTimeout accepts NodeJS.Timeout? yes. But if both libs? ReturnType<typeof setTimeout> is union? Actually global setTimeout may be overloaded. ReturnType<typeof setTimeout> resolves to last overload? In TS, typeof setTimeout is function with overloads, ReturnType picks last overload? Could be number or Timeout. clearTimeout accepts? In @types/node, clearTimeout(timeout: NodeJS.Timeout | string | number | undefined). In DOM, clearTimeout(id?: number). If ReturnType is number, ok. If Timeout, ok. If union? ok. So safe.\nNeed output only edit. Ensure exact original lines to find. Could include surrounding? The exact original line is `    let timeoutId: NodeJS.T"
+    }
+  ],
+  "score": "4/4",
+  "finished": "2026-08-15 12:02:51"
+}

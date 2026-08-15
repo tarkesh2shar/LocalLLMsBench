@@ -1,5 +1,5 @@
 {
-  "started": "2026-08-12 07:26:55",
+  "started": "2026-08-15 11:47:37",
   "mlx_reference": {
     "model": "Qwen3.6-27B-4bit (MLX)",
     "score": "3/5",
@@ -592,7 +592,253 @@
       "score": "4/5",
       "total_s": 872.2,
       "tok_per_s": 20.2
+    },
+    {
+      "label": "qwen3.8-27b-gguf-q4_0",
+      "gguf": "/Users/tusharpant/models/gguf/Qwen3.8-27B-Q4_0.gguf",
+      "size_gb": 14.95,
+      "runs": [
+        {
+          "task": "T3_runtime_bug",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 2ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  11:41:50\n   Duration  429ms (transform 19ms, setup 42ms, collect 11ms, tests 2ms, environment 235ms, prepare 52ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 1276,
+          "elapsed_s": 90.39,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": null,
+          "reasoning_chars": 419,
+          "output_head": "```ts\n// import { WeatherData } from '../types';\n\nexport const getWeatherIcon = (code: number): string => {\n  // Weather code mapping based on Open-Meteo API\n  switch (code) {\n    case 0: return '\u2600\ufe0f'; // Clear sky\n    case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear\n    case 2: return '\u26c5'; // Partly cloudy\n    case 3: return '\u2601\ufe0f'; // Overcast\n    case 45: return '\ud83c\udf2b\ufe0f'; // Fog\n    case 48: return '\ud83c\udf2b\ufe0f'; // Depositing rime fog\n    case 51: return '\ud83c\udf26\ufe0f'; // Light drizzle\n    case 53: return '\ud83c\udf26\ufe0f'; // Drizzle\n    case 55: return '\ud83c\udf26\ufe0f'; // Dense drizzle\n    case 56: return '\ud83c\udf27\ufe0f'; // Light freezing drizzle\n    case 57: return '\ud83c\udf27\ufe0f'; // Freezing drizzle\n    case 61: return '\ud83c\udf26\ufe0f'; // Slight rain\n    case 63: return '\ud83c\udf27\ufe0f'; // Rain\n    case 65: return '\ud83c\udf27\ufe0f'; // Heavy rain\n    case 66: return '\ud83c\udf27\ufe0f'; // Light freezing rain\n    case 67: return '\ud83c\udf27\ufe0f'; // Freezing rain\n    case 71: return '\ud83c\udf28\ufe0f'; // Slight snow fall\n    case 73",
+          "output_tail": "lsius' ? 'C' : 'F'}`;\n};\n\nexport const formatDate = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { \n    weekday: 'short', \n    month: 'short', \n    day: 'numeric' \n  });\n};\n\nexport const formatTime = (timeString: string): string => {\n  const date = new Date(timeString);\n  return date.toLocaleTimeString('en-US', { \n    hour: 'numeric',\n    hour12: true \n  });\n};\n\nexport const getDayName = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { weekday: 'long' });\n};\n```",
+          "output_chars": 3593
+        },
+        {
+          "task": "T3_runtime_bug",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  11:42:13\n   Duration  293ms (transform 21ms, setup 23ms, collect 9ms, tests 1ms, environment 140ms, prepare 36ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 309,
+          "elapsed_s": 21.34,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": "exact",
+          "reasoning_chars": 874,
+          "output_head": "<<<<<<< SEARCH\n    return (celsius * 9) / 5 + 30;\n=======\n    return (celsius * 9) / 5 + 32;\n>>>>>>> REPLACE",
+          "output_tail": "<<<<<<< SEARCH\n    return (celsius * 9) / 5 + 30;\n=======\n    return (celsius * 9) / 5 + 32;\n>>>>>>> REPLACE",
+          "output_chars": 108
+        },
+        {
+          "task": "T4_implement_spec",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 4,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/windDirection.test.ts  (4 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  11:44:41\n   Duration  277ms (transform 18ms, setup 21ms, collect 10ms, tests 1ms, environment 134ms, prepare 34ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 2265,
+          "elapsed_s": 146.88,
+          "finish": "stop",
+          "lines_changed": 25,
+          "anchor_match": null,
+          "reasoning_chars": 6295,
+          "output_head": "```ts\n/**\n * Convert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const normalized = ((degrees % 360) + 360) % 360;\n  const index = Math.round(normalized / 45) % 8;\n\n  switch (index) {\n    case 0:\n      return 'N';\n    case 1:\n      return 'NE';\n    case 2:\n      return 'E';\n    case 3:\n      return 'SE';\n    case 4:\n      return 'S';\n    case 5:\n      return 'SW';\n    case 6:\n      return 'W';\n    case 7:\n      return 'NW';\n    default:\n      return 'N';\n  }\n};\n```",
+          "output_tail": "vert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const normalized = ((degrees % 360) + 360) % 360;\n  const index = Math.round(normalized / 45) % 8;\n\n  switch (index) {\n    case 0:\n      return 'N';\n    case 1:\n      return 'NE';\n    case 2:\n      return 'E';\n    case 3:\n      return 'SE';\n    case 4:\n      return 'S';\n    case 5:\n      return 'SW';\n    case 6:\n      return 'W';\n    case 7:\n      return 'NW';\n    default:\n      return 'N';\n  }\n};\n```",
+          "output_chars": 616
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "outcome": "correctly_declined",
+            "detail": "explicitly reported no change needed"
+          },
+          "declined_explicitly": true,
+          "completion_tokens": 1016,
+          "elapsed_s": 70.67,
+          "finish": "stop",
+          "lines_changed": null,
+          "anchor_match": null,
+          "reasoning_chars": 3270,
+          "output_head": "NO CHANGE NEEDED",
+          "output_tail": "NO CHANGE NEEDED",
+          "output_chars": 16
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "outcome": "correctly_declined",
+            "detail": "explicitly reported no change needed"
+          },
+          "declined_explicitly": true,
+          "completion_tokens": 1061,
+          "elapsed_s": 71.2,
+          "finish": "stop",
+          "lines_changed": null,
+          "anchor_match": null,
+          "reasoning_chars": 3139,
+          "output_head": "NO CHANGE NEEDED",
+          "output_tail": "NO CHANGE NEEDED",
+          "output_chars": 16
+        }
+      ],
+      "rss_gib": 16.75,
+      "canary": {
+        "ok": true,
+        "missing": [],
+        "text": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+        "tok_per_s": 14.9
+      },
+      "score": "5/5",
+      "total_s": 400.5,
+      "tok_per_s": 14.8
+    },
+    {
+      "label": "qwen3.8-27b-gguf-q4_0-mtp",
+      "gguf": "/Users/tusharpant/models/gguf/Qwen3.8-27B-Q4_0.gguf",
+      "size_gb": 14.95,
+      "runs": [
+        {
+          "task": "T3_runtime_bug",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 2ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  11:48:33\n   Duration  285ms (transform 19ms, setup 22ms, collect 10ms, tests 2ms, environment 138ms, prepare 35ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 1276,
+          "elapsed_s": 45.16,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": null,
+          "reasoning_chars": 419,
+          "output_head": "```ts\n// import { WeatherData } from '../types';\n\nexport const getWeatherIcon = (code: number): string => {\n  // Weather code mapping based on Open-Meteo API\n  switch (code) {\n    case 0: return '\u2600\ufe0f'; // Clear sky\n    case 1: return '\ud83c\udf24\ufe0f'; // Mainly clear\n    case 2: return '\u26c5'; // Partly cloudy\n    case 3: return '\u2601\ufe0f'; // Overcast\n    case 45: return '\ud83c\udf2b\ufe0f'; // Fog\n    case 48: return '\ud83c\udf2b\ufe0f'; // Depositing rime fog\n    case 51: return '\ud83c\udf26\ufe0f'; // Light drizzle\n    case 53: return '\ud83c\udf26\ufe0f'; // Drizzle\n    case 55: return '\ud83c\udf26\ufe0f'; // Dense drizzle\n    case 56: return '\ud83c\udf27\ufe0f'; // Light freezing drizzle\n    case 57: return '\ud83c\udf27\ufe0f'; // Freezing drizzle\n    case 61: return '\ud83c\udf26\ufe0f'; // Slight rain\n    case 63: return '\ud83c\udf27\ufe0f'; // Rain\n    case 65: return '\ud83c\udf27\ufe0f'; // Heavy rain\n    case 66: return '\ud83c\udf27\ufe0f'; // Light freezing rain\n    case 67: return '\ud83c\udf27\ufe0f'; // Freezing rain\n    case 71: return '\ud83c\udf28\ufe0f'; // Slight snow fall\n    case 73",
+          "output_tail": "lsius' ? 'C' : 'F'}`;\n};\n\nexport const formatDate = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { \n    weekday: 'short', \n    month: 'short', \n    day: 'numeric' \n  });\n};\n\nexport const formatTime = (timeString: string): string => {\n  const date = new Date(timeString);\n  return date.toLocaleTimeString('en-US', { \n    hour: 'numeric',\n    hour12: true \n  });\n};\n\nexport const getDayName = (dateString: string): string => {\n  const date = new Date(dateString);\n  return date.toLocaleDateString('en-US', { weekday: 'long' });\n};\n```",
+          "output_chars": 3593
+        },
+        {
+          "task": "T3_runtime_bug",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 10,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/weatherUtils.test.ts  (10 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  10 passed (10)\n   Start at  11:48:47\n   Duration  277ms (transform 19ms, setup 23ms, collect 10ms, tests 1ms, environment 134ms, prepare 30ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 309,
+          "elapsed_s": 12.64,
+          "finish": "stop",
+          "lines_changed": 2,
+          "anchor_match": "exact",
+          "reasoning_chars": 874,
+          "output_head": "<<<<<<< SEARCH\n    return (celsius * 9) / 5 + 30;\n=======\n    return (celsius * 9) / 5 + 32;\n>>>>>>> REPLACE",
+          "output_tail": "<<<<<<< SEARCH\n    return (celsius * 9) / 5 + 30;\n=======\n    return (celsius * 9) / 5 + 32;\n>>>>>>> REPLACE",
+          "output_chars": 108
+        },
+        {
+          "task": "T4_implement_spec",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "tests_passed": 4,
+            "tests_failed": 0,
+            "tsc_errors_after": 2,
+            "vitest_tail": "\n RUN  v1.6.1 /Users/tusharpant/Desktop/local-model-bench/fixture\n\n \u2713 src/utils/windDirection.test.ts  (4 tests) 1ms\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  11:50:20\n   Duration  283ms (transform 16ms, setup 23ms, collect 7ms, tests 1ms, environment 133ms, prepare 32ms)\n\n"
+          },
+          "declined_explicitly": false,
+          "completion_tokens": 2265,
+          "elapsed_s": 92.32,
+          "finish": "stop",
+          "lines_changed": 25,
+          "anchor_match": null,
+          "reasoning_chars": 6295,
+          "output_head": "```ts\n/**\n * Convert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const normalized = ((degrees % 360) + 360) % 360;\n  const index = Math.round(normalized / 45) % 8;\n\n  switch (index) {\n    case 0:\n      return 'N';\n    case 1:\n      return 'NE';\n    case 2:\n      return 'E';\n    case 3:\n      return 'SE';\n    case 4:\n      return 'S';\n    case 5:\n      return 'SW';\n    case 6:\n      return 'W';\n    case 7:\n      return 'NW';\n    default:\n      return 'N';\n  }\n};\n```",
+          "output_tail": "vert a wind bearing in degrees to an 8-point compass direction.\n * See windDirection.test.ts for the exact expected behaviour.\n */\nexport const getWindDirection = (degrees: number): string => {\n  const normalized = ((degrees % 360) + 360) % 360;\n  const index = Math.round(normalized / 45) % 8;\n\n  switch (index) {\n    case 0:\n      return 'N';\n    case 1:\n      return 'NE';\n    case 2:\n      return 'E';\n    case 3:\n      return 'SE';\n    case 4:\n      return 'S';\n    case 5:\n      return 'SW';\n    case 6:\n      return 'W';\n    case 7:\n      return 'NW';\n    default:\n      return 'N';\n  }\n};\n```",
+          "output_chars": 616
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "whole_file",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "outcome": "correctly_declined",
+            "detail": "explicitly reported no change needed"
+          },
+          "declined_explicitly": true,
+          "completion_tokens": 1016,
+          "elapsed_s": 40.45,
+          "finish": "stop",
+          "lines_changed": null,
+          "anchor_match": null,
+          "reasoning_chars": 3270,
+          "output_head": "NO CHANGE NEEDED",
+          "output_tail": "NO CHANGE NEEDED",
+          "output_chars": 16
+        },
+        {
+          "task": "T5_noop_trap",
+          "arm": "search_replace",
+          "passed": true,
+          "grade": {
+            "passed": true,
+            "outcome": "correctly_declined",
+            "detail": "explicitly reported no change needed"
+          },
+          "declined_explicitly": true,
+          "completion_tokens": 1061,
+          "elapsed_s": 38.36,
+          "finish": "stop",
+          "lines_changed": null,
+          "anchor_match": null,
+          "reasoning_chars": 3139,
+          "output_head": "NO CHANGE NEEDED",
+          "output_tail": "NO CHANGE NEEDED",
+          "output_chars": 16
+        }
+      ],
+      "rss_gib": 18.9,
+      "canary": {
+        "ok": true,
+        "missing": [],
+        "text": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+        "tok_per_s": 24.7
+      },
+      "score": "5/5",
+      "total_s": 228.9,
+      "tok_per_s": 25.9
     }
   ],
-  "finished": "2026-08-12 07:41:45"
+  "finished": "2026-08-15 11:51:40"
 }
