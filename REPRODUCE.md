@@ -430,3 +430,49 @@ llama.cpp arm in this repo ran sampled unless its label says `-greedy`. Pass
 This was caught late, by an identical prompt replaying at 3,658 then 4,313 completion
 tokens. If your results move *within* one setup, check the server's defaults before
 your client's.
+
+## Reasoning budget (Qwen3.8 and any model with `reasoning_effort`)
+
+Qwen3.8's chat template defaults `reasoning_effort` to **`xhigh`**. That default is
+not neutral and it is not visible in the output, because `bench.py` strips `<think>`
+blocks after generation — the tokens are still paid for. Every §16 number was
+measured this way.
+
+Override it per request, not per server:
+
+```bash
+python3 harness/bench_effort.py --port 8095 --suite t12      --effort off
+python3 harness/bench_effort.py --port 8095 --suite extended --effort off
+```
+
+`--effort off` sends `{"enable_thinking": false}`; `low` / `medium` / `xhigh` send
+`{"reasoning_effort": ...}`. On the five-task suite this is 5/5 in 96.7s against 229s
+at the default, with the traps intact (§17).
+
+**If you are benchmarking any thinking model, record the budget you ran at.** A score
+compared across two different budgets is not a comparison.
+
+## Decode rate on its own
+
+```bash
+python3 harness/bench_decode_rate.py --port 8095 --label "n-max=3 (default)"
+```
+
+Fixed prompt, fixed cap, greedy — so the `sha` in the output is the check that two
+arms really are producing the same tokens at different speeds. If two arms disagree
+on `sha`, you are comparing outputs, not speeds, and the tok/s numbers are not
+comparable.
+
+Caveat: `mlx_lm.server` returns neither `content` nor `reasoning_content` when the
+reasoning block is still open at the token cap, so MLX arms hash the empty string.
+`completion_tokens` is still authoritative there.
+
+## `mlx_lm.server` exits immediately
+
+If anaconda is on `PATH` before Homebrew, MLX finds anaconda's MPICH and refuses to
+start, logging MPICH build details and nothing else — no traceback. `mlx_server.py`
+already handles it; outside this harness set it yourself:
+
+```bash
+export MLX_MPI_LIBNAME=$(brew --prefix open-mpi)/lib/libmpi.dylib
+```

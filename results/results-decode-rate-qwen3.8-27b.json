@@ -1,0 +1,68 @@
+{
+  "probe": "fixed 900-token greedy completion, identical prompt across arms",
+  "model": "Qwen3.8-27B (GGUF Q4_0 unsloth imatrix / mlx-community 4-bit)",
+  "note": "`sha` is of content+reasoning: identical across every llama.cpp arm, confirming speculation changes speed only. The MLX arm's sha is the empty-string hash because mlx_lm.server returns no content when the reasoning block is still open at the token cap.",
+  "arms": [
+    {
+      "label": "n-max=2",
+      "effort": null,
+      "elapsed_s": 39.7,
+      "completion_tokens": 900,
+      "tok_per_s": 22.67,
+      "finish": "length",
+      "sha": "851b93f706a39a68",
+      "note": "llama.cpp MTP, --spec-draft-n-max 2"
+    },
+    {
+      "label": "n-max=3 (default)",
+      "effort": null,
+      "elapsed_s": 39.51,
+      "completion_tokens": 900,
+      "tok_per_s": 22.78,
+      "finish": "length",
+      "sha": "851b93f706a39a68",
+      "note": "llama.cpp MTP, --spec-draft-n-max 3 (default)"
+    },
+    {
+      "label": "n-max=4",
+      "effort": null,
+      "elapsed_s": 44.96,
+      "completion_tokens": 900,
+      "tok_per_s": 20.02,
+      "finish": "length",
+      "sha": "851b93f706a39a68",
+      "note": "llama.cpp MTP, --spec-draft-n-max 4"
+    },
+    {
+      "label": "n-max=6",
+      "effort": null,
+      "elapsed_s": 61.2,
+      "completion_tokens": 900,
+      "tok_per_s": 14.71,
+      "finish": "length",
+      "sha": "851b93f706a39a68",
+      "note": "llama.cpp MTP, --spec-draft-n-max 6"
+    },
+    {
+      "label": "GGUF Q4_0 (no MTP)",
+      "effort": null,
+      "elapsed_s": 59.42,
+      "completion_tokens": 900,
+      "tok_per_s": 15.15,
+      "finish": "length",
+      "sha": "851b93f706a39a68",
+      "note": "llama.cpp, no speculation"
+    },
+    {
+      "label": "MLX 4-bit (no MTP)",
+      "effort": null,
+      "elapsed_s": 55.6,
+      "completion_tokens": 900,
+      "tok_per_s": 16.19,
+      "finish": "length",
+      "sha": "e3b0c44298fc1c14",
+      "note": "MLX 4-bit, no speculation (mlx-lm 0.31.3)"
+    }
+  ],
+  "recorded": "2026-08-18"
+}

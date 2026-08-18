@@ -798,6 +798,8 @@ dependencies beyond `mlx-lm`, `llama.cpp` and `npx`.
 | `e5e_trap_multiturn.py` | multi-turn — fabricated and stale objectives |
 | `bench_t12_external.py` | T1/T2 against a server the caller owns |
 | `bench_toolcall.py` | multi-turn with **native** OpenAI tool calling |
+| `bench_effort.py` | reasoning-budget arms over T1/T2 and T3/T4/T5 |
+| `bench_decode_rate.py` | fixed-workload decode rate, speed isolated from task |
 | `screen_config.py` | pre-download architecture / KV screen |
 
 ## 16. Qwen 3.8-27B Dense: Baseline vs. Native MTP
@@ -818,6 +820,122 @@ Evaluation of the newly released **Qwen 3.8-27B Dense** (`Qwen3.8-27B-Q4_0.gguf`
 * **Critic Trap (`bench_critic_trap.py`)**: **0% fabrication rate** on identical code pairs.
 * **Token Fidelity**: 100% bit-identical token output between baseline and MTP across all tasks.
 * **Wall-Clock Acceleration**: Total 5-task benchmark time dropped from 1,608s (Qwen 3.6 27B) down to **229s (Qwen 3.8 + MTP)** — a **7x total wall-clock speedup**.
+
+## 17. The 229s Was Measured at Max Thinking
+
+Section 16 credits MTP with a 7x wall-clock drop. That number is real but it was
+measured against a handicapped baseline: **every Qwen3.8 result above ran at the
+model's default reasoning budget, and that default is `xhigh`.**
+
+The Qwen3.8 chat template resolves `reasoning_effort` to `xhigh` unless the caller
+overrides it. Nothing in this harness overrode it -- `bench.py` strips `<think>`
+blocks *after* generation, which hides the cost rather than avoiding it. Asked for
+a one-paragraph explanation of a shadowed identifier, the model at `xhigh` spent
+4,000 tokens and **never reached an answer**; with thinking off it answered the
+same question, at the same quality, in 89.
+
+### Reasoning budget vs. score (T1/T2, tsc-graded, MTP on)
+
+| `reasoning_effort` | Score | Total | Output tokens |
+|---|---|---|---|
+| `xhigh` (default, §16) | 4/4 | 543.5s | 13,274 |
+| `medium` | 4/4 | 187.4s | 5,496 |
+| `low` | 4/4 | 122.1s | 3,472 |
+| **off** (`enable_thinking: false`) | **4/4** | **87.8s** | **2,690** |
+
+**6.2x faster at an unchanged 4/4**, T1 included -- the shadowed-identifier task no
+Qwen before 3.8 could solve. The full five-task suite behaves the same way, and
+the traps hold: **5/5 in 96.7s** with thinking off, against 229s for the shipped
+MTP config and 400s for the no-MTP baseline. T5 declined the fabricated error in
+both arms, the search/replace arm in 4 tokens.
+
+That is **2.4x beyond §16's best**, and it costs nothing -- same weights, same
+flags, one request field.
+
+### The MTP draft length does not want tuning
+
+`--spec-draft-n-max` defaults to 3 and §16 used the default. Sweeping it, on a
+fixed 900-token greedy completion (identical `sha` on all four arms, so speed is
+the only variable):
+
+| `--spec-draft-n-max` | tok/s |
+|---|---|
+| 2 | 22.67 |
+| **3 (default)** | **22.78** |
+| 4 | 20.02 |
+| 6 | 14.71 |
+
+Negative result, and worth recording because the draft statistics predict the
+opposite: acceptance repeatedly hits 1.00 with mean length 4.00, i.e. every drafted
+token accepted, which reads like a cap worth raising. It is not. Longer drafts cost
+more to verify than they save -- plausibly because three of every four layers in
+this model are SSM rather than attention, so batch verification does not come as
+cheap as it does on a pure-attention model. **Read acceptance rates as a diagnostic,
+not as a tuning signal.**
+
+### MLX vs. llama.cpp on the same weights
+
+MLX is genuinely faster per token on Apple silicon, and it does not matter here.
+
+| Runtime | tok/s |
+|---|---|
+| llama.cpp Q4_0, no speculation | 15.15 |
+| **MLX 4-bit, no speculation** | **16.19** |
+| llama.cpp Q4_0 + MTP | **22.78** |
+
+**MLX wins plain decode by 6.9%** -- consistent with the ~10% seen on Qwen3.6 in
+§12 -- and then loses by 41% overall, because MTP is worth +50% and MLX cannot run
+it. `mlx-community/Qwen3.8-27B-MTP-4bit` declares `model_type: qwen3_5_mtp`; mlx-lm
+0.31.3 has no such module and 0.31.3 is the current release, so that 239 MB draft
+head has no runtime that can load it.
+
+On the graded suites the gap is wider than raw decode rate predicts:
+
+| Suite (thinking off) | llama.cpp + MTP | MLX 4-bit |
+|---|---|---|
+| T1/T2 | **4/4**, 87.8s, 2,690 tok | 3/4, 185.8s, 2,714 tok |
+| T3/T4/T5 | 5/5, **96.7s**, 2,587 tok | 5/5, 193.3s, 2,536 tok |
+
+**MLX is almost exactly 2x slower on wall clock**, against a 1.41x decode-rate gap.
+The remainder is prefill: T5/whole_file took MLX 81.5s versus 42.5s for near-identical
+output. These runs used `--prefill-step-size 512`, inherited from `mlx_server.py`
+where it was chosen to lower peak memory, not to go fast; whether raising it closes
+the gap is untested.
+
+MLX also lost one task -- T1/search_replace, 95 tokens, no lines changed, where
+llama.cpp passed in 71. The other three arms produced *identical* token counts
+(1787 / 804 / 28), so this is the same model on the same greedy path diverging on a
+single edit. The likeliest cause is quantization rather than runtime: the GGUF is
+unsloth's imatrix-calibrated Q4_0 (496 entries), the MLX build is a plain 4-bit
+convert. One task at one attempt is not enough to call it a quality difference.
+
+### Recommended configuration
+
+Unchanged server flags from §16; the change is one request field.
+
+```bash
+llama-server -m ~/models/gguf/Qwen3.8-27B-Q4_0.gguf \
+  --host 127.0.0.1 --port 8095 -c 32768 -ngl 999 --no-webui --jinja \
+  --spec-type draft-mtp --temp 0 --top-k 1
+```
+```jsonc
+{ "chat_template_kwargs": { "enable_thinking": false } }   // per request
+```
+
+Operational note: `mlx_lm.server` exits immediately if anaconda's MPICH precedes
+Open MPI on `PATH`. `mlx_server.py` already sets `MLX_MPI_LIBNAME`; anything
+launching mlx-lm outside this harness needs it too.
+
+Reproduction: `harness/bench_effort.py --suite {t12,extended} --effort {off,low,medium,xhigh}`
+and `harness/bench_decode_rate.py --label ...`, both against a server you own.
+Raw traces in `results/results-t12-qwen3.8-27b-*.json`,
+`results/results-extended-qwen3.8-27b-*.json`, and
+`results/results-decode-rate-qwen3.8-27b.json`.
+
+**Scope:** one attempt per task, greedy, one fixture -- the limits stated below apply
+unchanged. `bench_critic_trap.py` and the multi-turn `bench_toolcall.py` were **not**
+re-run at reduced budget. Multi-turn tool calling is where thinking-off is most
+likely to cost something, and it remains untested.
 
 ## Limitations
 

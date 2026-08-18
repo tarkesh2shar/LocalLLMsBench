@@ -1,0 +1,101 @@
+{
+  "model": "qwen3.8-27b-mtp-medium",
+  "started": "2026-08-18 13:53:00",
+  "note": "T1/T2 only, run against an external server",
+  "baseline_errors": [
+    "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+    "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+  ],
+  "runs": [
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 2103,
+      "elapsed_s": 70.57,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 1239,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/ForecastCard';\nimport HourlyChart from './components/HourlyChart';\nimport SavedLocations from './components/SavedLocations';\nimport ThemeToggle from './components/ThemeToggle';\nimport TemperatureToggle from './components/TemperatureToggle';\nimport { WeatherData, GeocodingResult, SavedLocation } from './types';\nimport { WeatherService } from './services/weatherService';\n\nconst App: React.FC = () => {",
+      "reasoning_preview": "The error is on line 149, column 16: `error TS6133: 'error' is declared but its value is never read.`\n\nLooking at the code, I need to find line 149. Let me count through the file...\n\nThe issue is in the `handleLoadSavedLocation` function where there's a `.catch(error => {` - the `error` parameter is declared but never used.\n\nLet me look at the relevant section:\n\n```tsx\n    setTimeout(() => {\n      WeatherService.getWeatherData(location.latitude, location.longitude)\n        .then(data => {\n          setWeatherData(data);\n          setLoading(false);\n        })\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n    }, 500);\n```\n\nThe `error` parameter in `.catch(error => {` is never used. The fix is to either:\n1. Remove the parameter: `.catch(() => {`\n2. Prefix with underscore: `.catch(_error => {`\n\nThe simplest fix that doesn't change behavior is to remove the unused parameter or prefix it with an underscore. Let me use `_error` to be safe, or just remove it entirely since it's not used.\n\nActually, the simplest and cleanest fix is to just remove the parameter name: `.catch(() => {`\n\nLet me output the complete file with this one change.\n"
+    },
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 2123,
+      "elapsed_s": 69.87,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 6650,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n=======\n        .catch(() => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n>>>>>>> REPLACE",
+      "reasoning_preview": "The error is at line 149, column 16: `'error' is declared but its value is never read.`\n\nLooking at the code, I need to find line 149. Let me count the lines...\n\nActually, let me look at the `.catch` block in `handleLoadSavedLocation`:\n\n```tsx\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n```\n\nThe `error` parameter in the `.catch(error => {` callback is declared but never used. The fix is to either:\n1. Remove the parameter: `.catch(() => {`\n2. Prefix with underscore: `.catch(_error => {`\n\nOption 1 is cleaner and doesn't change behavior. Let me use that.\n\nLet me verify this is at line 149. Let me count lines in the file:\n\n1: import React, { useState, useEffect } from 'react';\n2: import SearchBar from './components/SearchBar';\n3: import WeatherCard from './components/WeatherCard';\n4: import ForecastCard from './components/ForecastCard';\n5: import HourlyChart from './components/HourlyChart';\n6: import SavedLocations from './components/SavedLocations';\n7: import ThemeToggle from './components/ThemeToggle';\n8: import TemperatureToggle from './components/TemperatureToggle';\n9: import { WeatherData, GeocodingResult, SavedLocation } from './types';\n10: import { WeatherService } from './services/weatherService';\n11: (blank)\n12: const App: React.FC = () => {\n13:   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);\n14:   const [loading, setLoading] = useState(false);\n15:   "
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 977,
+      "elapsed_s": 34.03,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 726,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n  onCitySelect: (city: GeocodingResult) => void;\n}\n\nconst SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {\n  const [query, setQuery] = useState('');\n  const [results, setResults] = useState<GeocodingResult[]>([]);\n  const [isLoading, setIsLoading] = useState(false);\n  const [showResults, setShowResults] = useState(false);\n  const searchRef = useRef<HTMLDivElement>(null);\n\n  useEffect(",
+      "reasoning_preview": "The error is `TS2503: Cannot find namespace 'NodeJS'` at line 30, column 20. This is the line:\n\n```tsx\nlet timeoutId: NodeJS.Timeout;\n```\n\nThe `NodeJS` namespace is not available because the project likely doesn't have `@types/node` installed or it's not included in the TypeScript configuration.\n\nThe fix is to change `NodeJS.Timeout` to `ReturnType<typeof setTimeout>` which is the standard way to type a timeout in browser environments without relying on Node.js types.\n\nLet me make sure this is the only change needed. The `clearTimeout(timeoutId)` call will still work fine with `ReturnType<typeof setTimeout>` since `clearTimeout` accepts that type.\n\nLet me output the complete corrected file with just this one change.\n"
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 293,
+      "elapsed_s": 12.96,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 1080,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n    let timeoutId: NodeJS.Timeout;\n=======\n    let timeoutId: ReturnType<typeof setTimeout>;\n>>>>>>> REPLACE",
+      "reasoning_preview": "The error is `TS2503: Cannot find namespace 'NodeJS'` at line 30, column 20. This is the line:\n\n```\n    let timeoutId: NodeJS.Timeout;\n```\n\nThe issue is that `NodeJS.Timeout` is not available because the `@types/node` package might not be installed or the namespace isn't available in this project's TypeScript configuration.\n\nThe fix is to change `NodeJS.Timeout` to `ReturnType<typeof setTimeout>` which is the standard way to type a timeout in browser environments without relying on Node.js types.\n\nLet me make sure this is the minimal fix. The line is:\n```\n    let timeoutId: NodeJS.Timeout;\n```\n\nReplace with:\n```\n    let timeoutId: ReturnType<typeof setTimeout>;\n```\n\nThis is a standard TypeScript pattern that works in both browser and Node environments without needing `@types/node`. It won't change behavior at all - it's purely a type annotation change.\n\nLet me verify the exact text to search for. Looking at the code:\n\n```\n    let timeoutId: NodeJS.Timeout;\n```\n\nYes, that's the line. Let me make sure I'm matching it exactly with the surrounding context to be safe.\n"
+    }
+  ],
+  "score": "4/4",
+  "finished": "2026-08-18 13:56:10"
+}
