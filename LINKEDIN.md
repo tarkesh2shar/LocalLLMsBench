@@ -284,6 +284,52 @@ https://github.com/tarkesh2shar/LocalLLMsBench
 
 ---
 
+## OPTION D — "A video claimed this model is 2.7x faster. I tested it."
+
+~1,850 characters. Highly engaging hook dissecting the "2.7x" benchmark claim with empirical data.
+
+```text
+A video claimed a new fine-tuned Qwen 3.8-27B model ("Dirk") is "2.7x faster" for local coding.
+
+I downloaded the 16 GB weights to my Mac to see if the claim is real.
+
+The short answer: yes, but not the way you think.
+
+If you measure raw token generation on Apple Silicon:
+• Stock Qwen 3.8: 22.8 tok/s
+• Dirk-Qwen: 23.1 tok/s
+
+The model does not magically double your memory bandwidth. Hardware decode speed is identical.
+
+Yet when I benchmarked them on identical TypeScript compiler repair tasks:
+• Stock Qwen 3.8 took 543.5 seconds (~9 minutes) and burned 13,274 tokens.
+• Dirk finished in 156.8 seconds (~2.5 minutes) and used only 3,482 tokens.
+
+Both solved 4 out of 4 tasks with clean compiler passes.
+
+Dirk was 3.5x faster in real wall-clock time, using 74% fewer tokens.
+
+Why?
+
+Stock Qwen 3.8 defaults its reasoning effort to "xhigh". When given a 2-line bug fix, it spends 3,000 to 5,000 internal tokens rambling in <think> tags before writing code.
+
+Dirk ships with a custom "Sharp" chat template. It forces terseness into the system prompt and defaults thinking to "medium". It doesn't generate tokens faster — it stops generating tokens you never asked for.
+
+Two caveats I found while stress-testing it:
+
+1. Turn thinking completely off, and it runs in 124 seconds (4.4x faster), but it fails subtle trap tasks — it tries to edit clean code when given a fake bug.
+
+2. The sweet spot was setting reasoning effort to "low": 100% 5/5 pass rate across real bugs, spec implementations, and no-op traps, in less than half the time of the base model.
+
+Also confirmed: native MTP speculative decoding gives a +65% pure decode speedup (14 tok/s → 23 tok/s) on Apple Silicon Metal with zero degradation.
+
+Raw traces, prompts, and reproduce scripts are open:
+
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
+
+---
+
 ## Posting notes
 
 **Formatting**
