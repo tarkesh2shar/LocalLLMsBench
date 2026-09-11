@@ -1,0 +1,60 @@
+{
+  "model": "Nail-Qwen3.6-35B-A3B-MTP-UD-IQ4_XS",
+  "gguf": "/Users/tusharpant/models/gguf/Nail-Qwen3.6-35B-A3B-MTP-UD-IQ4_XS.gguf",
+  "size_gb": 16.96,
+  "started": "2026-09-11 20:04:50",
+  "decode_rates": [
+    {
+      "label": "Nail MTP n-max=3 (native template)",
+      "effort": null,
+      "elapsed_s": 16.33,
+      "completion_tokens": 900,
+      "tok_per_s": 55.1,
+      "finish": "length",
+      "sha": "7526c98dfadaa281"
+    },
+    {
+      "label": "Nail MTP n-max=3 (thinking off)",
+      "effort": "off",
+      "elapsed_s": 15.97,
+      "completion_tokens": 900,
+      "tok_per_s": 56.34,
+      "finish": "length",
+      "sha": "3c642b6b38f32c96"
+    },
+    {
+      "label": "Nail MTP n-max=3 (effort=low)",
+      "effort": "low",
+      "elapsed_s": 16.73,
+      "completion_tokens": 900,
+      "tok_per_s": 53.78,
+      "finish": "length",
+      "sha": "557fee2cb733604b"
+    },
+    {
+      "label": "Nail UD-IQ4_XS (no MTP baseline)",
+      "effort": null,
+      "elapsed_s": 13.83,
+      "completion_tokens": 900,
+      "tok_per_s": 65.08,
+      "finish": "length",
+      "sha": "557fee2cb733604b"
+    }
+  ],
+  "t12_scores": {
+    "native": {
+      "score": "4/4",
+      "total_tokens": 9218,
+      "total_s": 175.9
+    }
+  },
+  "extended_scores": {
+    "effort_low": {
+      "score": "3/5",
+      "total_tokens": 22493,
+      "total_s": 411.7
+    }
+  },
+  "mtp_rss_gib": 18.64,
+  "finished": "2026-09-11 20:16:15"
+}

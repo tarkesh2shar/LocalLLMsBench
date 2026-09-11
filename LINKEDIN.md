@@ -330,6 +330,53 @@ https://github.com/tarkesh2shar/LocalLLMsBench
 
 ---
 
+## OPTION E — "65 tokens/sec on Mac, but speculative decoding slows it down"
+
+~1,850 characters. Contrasting Dense vs MoE local coding models and the counterintuitive MTP inversion.
+
+```text
+I just benchmarked the newest local MoE model ("Nail", based on Qwen 35B-A3B) on Apple Silicon.
+
+It revealed two things I did not expect:
+
+1. The raw decode speed is 65 tokens per second.
+2. Speculative decoding actually made it slower.
+
+Here is the comparison against the dense 27B model (Dirk) running on the same Mac:
+
+• Dirk-27B (Dense): 14 tok/s baseline → 23.1 tok/s with MTP (+65% speedup)
+• Nail-35B (MoE): 65.1 tok/s baseline → 55.1 tok/s with MTP (15% SLOWER)
+
+Why does speculative decoding invert on MoE?
+
+On a dense 27B model, every forward pass reads 15 GB of weights. It is heavy, so generating draft tokens and batch-verifying them saves massive memory bandwidth.
+
+On a 35B-A3B MoE, only 3.39B parameters are active per token. Generating a token is so cheap and fast (65 tok/s) that the overhead of draft verification and context management actually slows it down.
+
+If you are running lightweight MoEs locally: do not enable MTP speculative decoding. Plain baseline is fastest.
+
+Then came the task benchmarks.
+
+On real TypeScript build errors, Nail swept 4/4 in 175 seconds. It is blazing fast and accurate.
+
+Then I handed it the no-op trap: a clean, working file, with an error message I completely fabricated.
+
+The dense model (Dirk) saw right through it: declined the edit and passed.
+
+The MoE model fell into an architectural rabbit hole: it literally spent 15,499 tokens counting lines one by one trying to find line 42 in the code:
+"1: // import... 2: (empty)... 3: export const... 12: Drizzle..."
+
+It burned its entire context window and crashed on the token cap.
+
+MoEs give you server-grade 65 tok/s speed on a 16GB–48GB Mac. But dense models still win hands-down when dealing with false premises and hallucinations.
+
+Full benchmarks, logs, and reproduction scripts:
+
+https://github.com/tarkesh2shar/LocalLLMsBench
+```
+
+---
+
 ## Posting notes
 
 **Formatting**

@@ -1024,6 +1024,49 @@ Tested with `--jinja` against an active React repo with failing Vitest tests (23
 - **Malformed Calls:** `0`. Clean adherence to OpenAI function calling JSON schema.
 - **Immediate Fix:** On Turn 4, called `read_file` -> `edit_file` on `weatherUtils.ts` -> `run_tests`, instantly reducing failing tests from 3 to 1 (25 passed / 1 failed).
 
+## 20. Nail-Qwen3.6-35B-A3B: The 65 tok/s MoE and the Speculative Inversion
+
+Following Luke's Dev Lab testing **Nail** (`peculiar-ragdoll/Nail-Qwen3.6-35B-A3B-GGUF-MTP`), we downloaded and evaluated `Nail-Qwen3.6-35B-A3B-MTP-UD-IQ4_XS.gguf` (16.96 GB) on Apple Silicon Metal. Nail pairs the 35B-A3B sparse Mixture-of-Experts architecture (3.39B active parameters per token) with the "Sharp" chat template.
+
+### 1. MoE Raw Speed & The Speculative Decoding Inversion
+
+Fixed 900-token greedy completion on LRU Cache implementation (`bench_decode_rate.py`):
+
+| Model & Quant | Decode Speed | 900-tok Time | Speculation |
+|---|---|---|---|
+| **Nail UD-IQ4_XS (MoE 3.4B active)** | **65.08 tok/s** | **13.83s** | **None (Baseline)** |
+| Nail UD-IQ4_XS (MoE 3.4B active) | 56.34 tok/s | 15.97s | MTP (thinking off) |
+| Nail UD-IQ4_XS (MoE 3.4B active) | 55.10 tok/s | 16.33s | MTP (native template) |
+| Dirk-Qwen3.8-27B (Dense 27B active) | 23.90 tok/s | 37.66s | MTP (thinking off) |
+| Dirk-Qwen3.8-27B (Dense 27B active) | 13.96 tok/s | 64.46s | None (Baseline) |
+
+**Two major discoveries:**
+1. **The MoE Speed Jump:** Nail reaches **65.08 tok/s** on Apple Silicon — **4.6x faster** than unassisted dense 27B models (13.96 tok/s) and nearly 3x faster than dense 27B with MTP (23.11 tok/s).
+2. **The Speculative Inversion:** On dense models, MTP speculation provides a +65% speedup because single-token forward passes are expensive. On a sparse MoE model with only 3.39B active parameters, base decode is so fast (65 tok/s) that MTP verification overhead actually *slows generation down* to 55 tok/s! **Do not run MTP speculation on lightweight MoEs.**
+
+### 2. Task Performance: Real Bugs vs. Traps
+
+| Suite | Score | Total Time | Notes |
+|---|---|---|---|
+| **T1 / T2 Compiler Graded** | **4/4** | **175.9s** | Swept both whole_file and search_replace cleanly. |
+| **Extended Suite (T3/T4/T5)** | **3/5** | 411.7s | Solved T3 runtime bug and T4 spec, but failed T5 trap. |
+
+### 3. The Return of the Line-Counting Trap (T5)
+
+While Dirk (dense 27B) passed T5 with a 5/5 score, Nail exhibited the exact architectural pathology recorded in §8 for Qwen3.6-35B-A3B:
+
+When presented with a fabricated error on line 42 of a clean file, Nail spent **15,499 tokens** across its two attempts actively counting lines one-by-one:
+```text
+"Let's look at line 42 in the provided code.
+Counting lines:
+1: // import...
+2: (empty)
+3: export const...
+...
+12: Light drizzle..."
+```
+It exhausted its token budget before deciding, confirming that sparse MoE routing still struggles with false premises compared to dense models.
+
 ## Limitations
 
 **Five tasks, one repository, one attempt each.** §1–§12 are single-turn with no tool
