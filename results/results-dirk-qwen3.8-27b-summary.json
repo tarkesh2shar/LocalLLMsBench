@@ -1,0 +1,65 @@
+{
+  "model": "Dirk-Qwen3.8-27B-UD-Q4_K_XL",
+  "gguf": "/Users/tusharpant/models/gguf/Dirk-Qwen3.8-27B-UD-Q4_K_XL.gguf",
+  "size_gb": 16.35,
+  "started": "2026-09-11 12:19:55",
+  "decode_rates": [
+    {
+      "label": "Dirk MTP n-max=3 (native template)",
+      "effort": null,
+      "elapsed_s": 38.94,
+      "completion_tokens": 900,
+      "tok_per_s": 23.11,
+      "finish": "length",
+      "sha": "9ce463d6f158000f"
+    },
+    {
+      "label": "Dirk MTP n-max=3 (thinking off)",
+      "effort": "off",
+      "elapsed_s": 37.66,
+      "completion_tokens": 900,
+      "tok_per_s": 23.9,
+      "finish": "length",
+      "sha": "09d8a9b6aeb2825d"
+    },
+    {
+      "label": "Dirk MTP n-max=3 (effort=medium)",
+      "effort": "medium",
+      "elapsed_s": 40.21,
+      "completion_tokens": 900,
+      "tok_per_s": 22.38,
+      "finish": "length",
+      "sha": "9ce463d6f158000f"
+    },
+    {
+      "label": "Dirk GGUF UD-Q4_K_XL (no MTP baseline)",
+      "effort": null,
+      "elapsed_s": 64.46,
+      "completion_tokens": 900,
+      "tok_per_s": 13.96,
+      "finish": "length",
+      "sha": "1e40e0da18a03e8c"
+    }
+  ],
+  "t12_scores": {
+    "native": {
+      "score": "4/4",
+      "total_tokens": 3482,
+      "total_s": 156.8
+    },
+    "nothink": {
+      "score": "4/4",
+      "total_tokens": 2685,
+      "total_s": 124.6
+    }
+  },
+  "extended_scores": {
+    "nothink": {
+      "score": "4/5",
+      "total_tokens": 1573,
+      "total_s": 82.9
+    }
+  },
+  "mtp_rss_gib": 20.32,
+  "finished": "2026-09-11 12:29:38"
+}

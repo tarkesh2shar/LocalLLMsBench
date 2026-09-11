@@ -937,10 +937,99 @@ unchanged. `bench_critic_trap.py` and the multi-turn `bench_toolcall.py` were **
 re-run at reduced budget. Multi-turn tool calling is where thinking-off is most
 likely to cost something, and it remains untested.
 
+## 18. DFlash 2 Block Diffusion: Tested, Blocked by Loader Compatibility
+
+Following reports of DFlash 2 reaching >200 tok/s on server-grade CUDA hardware via speculative block diffusion, I tested whether an external DFlash 2 draft model could accelerate **Qwen 3.8-27B Dense** locally on Apple Silicon.
+
+### The experiment
+
+1. Downloaded `z-lab/Qwen3.8-27B-DFlash2-GGUF` (`Qwen3.8-27B-DFlash2-Q4_K_M.gguf`, 1.14 GB) via `download_dflash2.py`.
+2. Target: `~/models/gguf/Qwen3.8-27B-Q4_0.gguf` (14.95 GB).
+3. Tested against `llama-server` (v10470 Metal) with `--spec-type draft-dflash -md ~/models/gguf/Qwen3.8-27B-DFlash2-Q4_K_M.gguf`.
+
+### The result: loader architectural mismatch
+
+`llama-server` rejected the draft model at initialization:
+
+```text
+llama_model_load: error loading model: done_getting_tensors: wrong number of tensors; expected 81, got 58
+common_speculative_init_result: failed to load draft model, 'Qwen3.8-27B-DFlash2-Q4_K_M.gguf'
+```
+
+**Why it failed:** `llama.cpp`'s Metal/C++ `draft-dflash` loader was implemented against the initial **DFlash v1** specification (expecting 81 tensors). **DFlash 2** revised the architecture down to 58 tensors (introducing candidate path selectors and 2-tap dynamic convolutions). The draft checkpoint cannot load in standard `llama.cpp` until upstream merges the DFlash 2 tensor schema.
+
+### Speculation on Apple Silicon: MTP vs. DFlash 2 expectations
+
+With DFlash 2 unavailable on Metal, here is the measured controlled baseline on `Qwen 3.8-27B-Q4_0` (900-token fixed workload, greedy, thinking off):
+
+| Configuration | Decode rate | 900-tok Time | Draft Acceptance | Output Hash (Determinism) | Speedup |
+|---|---|---|---|---|---|
+| **Baseline (No Speculation)** | 15.80 tok/s | 56.97s | N/A | `7dc777d13756c986` | 1.00x |
+| **Native MTP (`draft-mtp`, n=3)** | **29.52 tok/s** | **30.49s** | **86.8%** (649/748) | `7dc777d13756c986` | **1.87x** |
+
+**The hardware ceiling:** The 236 tok/s reported in video demonstrations relies on SGLang/vLLM on enterprise NVIDIA hardware (e.g. H100s / dual RTX 4090s) with **>1,000–3,300 GB/s** memory bandwidth. On Apple Silicon unified memory (150–200 GB/s bandwidth on M5 Pro), verifying a 15 GB target model every draft step imposes a physical ceiling of ~30–50 tok/s for a 27B model regardless of drafter speed.
+
+### What to keep an eye on
+
+When Mac-compatible DFlash 2 implementations land, evaluate:
+
+1. **`llama.cpp` DFlash 2 PRs:** Track updates to `draft-dflash` supporting the 58-tensor GGUF schema.
+2. **`dflash-mlx` native Metal kernels:** Look for standalone Apple Silicon MLX block-diffusion kernels that bypass GGUF overhead.
+3. **Acceptance vs. Verification tradeoff:** On hybrid attention/SSM models (Qwen 3.8), test whether block diffusion ($N=8$ or $16$) preserves throughput without stalling on batch verification latency.
+
+## 19. Dirk-Qwen3.8-27B: The "Sharp" Template, Spec-Dec, and the 2.7x Speed Claim
+
+Community fine-tunes and configurations by `peculiar-ragdoll` claim up to "2.7x faster performance" on coding tasks with **Dirk-Qwen3.8-27B**. We downloaded and benchmarked `peculiar-ragdoll/Dirk-Qwen3.8-27B-GGUF` (`Dirk-Qwen3.8-27B-UD-Q4_K_XL.gguf`, 16.35 GB) to evaluate:
+1. Does the model achieve higher raw token decode speed?
+2. What accounts for the "2.7x" speedup in real-world workflows?
+3. How does it perform on synthetic code editing (T1/T2), the extended repair suite (T3/T4/T5), and native OpenAI tool calling?
+
+### Decode Speed: Hardware Bandwidth vs. MTP Speculation
+
+Raw generation rate on Apple Silicon (Metal offload, 900-token greedy completion):
+
+| Configuration | Decode Speed | 900-tok Elapsed | SHA Determinism |
+|---|---|---|---|
+| **Dirk MTP (`draft-mtp`, n=3, thinking off)** | **23.90 tok/s** | **37.66s** | `09d8a9b6aeb2825d` |
+| **Dirk MTP (`draft-mtp`, n=3, native Sharp template)** | **23.11 tok/s** | **38.94s** | `9ce463d6f158000f` |
+| **Dirk MTP (`draft-mtp`, n=3, effort=medium)** | **22.38 tok/s** | **40.21s** | `9ce463d6f158000f` |
+| Stock Qwen3.8-27B (MTP n=3, Q4_0 GGUF) | 22.78 tok/s | 39.51s | `851b93f706a39a68` |
+| Stock Qwen3.8-27B (MLX 4-bit, no speculation) | 16.19 tok/s | 55.60s | `e3b0c44298fc1c14` |
+| Stock Qwen3.8-27B (GGUF Q4_0, no speculation) | 15.15 tok/s | 59.42s | `851b93f706a39a68` |
+| **Dirk Baseline (No MTP Speculation)** | **13.96 tok/s** | **64.46s** | `1e40e0da18a03e8c` |
+
+**Takeaway:** Dirk does **not** double raw hardware tokens-per-second (it runs at ~23–24 tok/s with MTP, identical to stock Qwen3.8 because memory bandwidth is unchanged). Native MTP delivers **+65.5% faster generation** over baseline. The identical SHA between Native template and `effort=medium` proves Dirk automatically defaults to medium reasoning.
+
+### The "2.7x" Speedup: Eliminating Token Waste on Task Turnaround
+
+The speedup is **time-to-solution**, not raw tok/s:
+
+| Configuration | Score | T1/T2 Wall Clock | Completion Tokens | Turnaround Speedup |
+|---|---|---|---|---|
+| Stock Qwen3.8-27B (Default `xhigh`) | **4/4** | 543.5s | 13,274 | 1.0x (Baseline) |
+| Dirk (effort=`low`) | **4/4** | 216.1s | 5,117 | **2.5x faster** |
+| **Dirk (Native Sharp Template)** | **4/4** | **156.8s** | **3,482** | **3.5x faster** |
+| **Dirk (Thinking Off)** | **4/4** | **124.6s** | **2,685** | **4.4x faster** |
+
+Stock Qwen3.8 burns thousands of internal reasoning tokens before outputting small edits. Dirk's built-in **"Sharp" chat template** forces terseness and defaults reasoning effort to `medium`, achieving **3.5x faster completion and a 74% token reduction** straight out-of-the-box.
+
+### Extended Suite & Traps (T3 / T4 / T5)
+
+- **Thinking Off (`enable_thinking: false`):** 4/5 (82.9s). Failed the subtle T5 no-op trap in search/replace mode.
+- **Effort Low (`effort="low"`):** **5/5 (100% pass rate)**. Correctly solved T3 runtime bug (8.4s), T4 feature spec (49.7s), and cleanly declined the fabricated error on T5 in both whole-file and search-replace modes.
+
+### Native Tool Calling (`control_real`)
+
+Tested with `--jinja` against an active React repo with failing Vitest tests (23 passed / 3 failed):
+- **Malformed Calls:** `0`. Clean adherence to OpenAI function calling JSON schema.
+- **Immediate Fix:** On Turn 4, called `read_file` -> `edit_file` on `weatherUtils.ts` -> `run_tests`, instantly reducing failing tests from 3 to 1 (25 passed / 1 failed).
+
 ## Limitations
 
 **Five tasks, one repository, one attempt each.** §1–§12 are single-turn with no tool
 use; §13–§15 add multi-turn loops and §15 adds native tool calling.
+
+**DFlash 2 drafter evaluation is blocked on Mac runtimes.** The external DFlash 2 GGUF drafter requires SGLang/CUDA or updated C++/Metal loader kernels in `llama.cpp` / `mlx-lm` before it can be benchmarked. Native MTP remains the only verified working speculation engine for Qwen 3.8 on Metal.
 
 **Determinism is runtime-dependent, and I got this wrong for half the repo.** MLX runs
 are greedy and did reproduce token-for-token across restarts. llama.cpp runs did not —

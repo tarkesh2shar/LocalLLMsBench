@@ -30,7 +30,9 @@ PROMPT = ("Write a complete TypeScript implementation of a generic LRU cache cla
 def run(port, max_tokens, effort=None):
     body = {"messages": [{"role": "user", "content": PROMPT}],
             "max_tokens": max_tokens, "stream": False, "temperature": 0, "top_k": 1}
-    if effort:
+    if effort == "off":
+        body["chat_template_kwargs"] = {"enable_thinking": False}
+    elif effort:
         body["chat_template_kwargs"] = {"reasoning_effort": effort}
     req = urllib.request.Request(f"http://127.0.0.1:{port}/v1/chat/completions",
                                  data=json.dumps(body).encode(),

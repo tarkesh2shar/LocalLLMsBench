@@ -1,0 +1,101 @@
+{
+  "model": "dirk-qwen3.8-27b-mtp-effort-low",
+  "started": "2026-09-11 13:13:06",
+  "note": "T1/T2 only, run against an external server",
+  "baseline_errors": [
+    "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+    "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+  ],
+  "runs": [
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 1981,
+      "elapsed_s": 83.38,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 704,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/ForecastCard';\nimport HourlyChart from './components/HourlyChart';\nimport SavedLocations from './components/SavedLocations';\nimport ThemeToggle from './components/ThemeToggle';\nimport TemperatureToggle from './components/TemperatureToggle';\nimport { WeatherData, GeocodingResult, SavedLocation } from './types';\nimport { WeatherService } from './services/weatherService';\n\nconst App: React.FC = () => {",
+      "reasoning_preview": "The error is on line 149, column 16: `'error' is declared but its value is never read.`\n\nLooking at the code, I need to find line 149. Let me count... The issue is in the `handleLoadSavedLocation` function where there's a `.catch(error => {` \u2014 the `error` parameter is declared but never used inside the catch block.\n\nThe fix is to either:\n1. Remove the parameter: `.catch(() => {`\n2. Prefix with underscore: `.catch(_error => {`\n\nOption 1 is the cleanest and most minimal fix. Let me verify this is indeed line 149.\n\nLooking at the `.catch(error => {` in the `handleLoadSavedLocation` function \u2014 yes, `error` is declared but never read inside that callback. The fix is to change it to `.catch(() => {`.\n"
+    },
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 2117,
+      "elapsed_s": 85.91,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 6848,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n        .catch(error => {\n=======\n        .catch(() => {\n>>>>>>> REPLACE",
+      "reasoning_preview": "The error is on line 149, column 16: `'error' is declared but its value is never read.`\n\nLooking at the code, I need to find line 149. Let me count through the code...\n\nThe issue is in the `handleLoadSavedLocation` function where there's a `.catch(error => {` - the `error` parameter is declared but never used.\n\nLet me look at that section:\n\n```tsx\n    setTimeout(() => {\n      WeatherService.getWeatherData(location.latitude, location.longitude)\n        .then(data => {\n          setWeatherData(data);\n          setLoading(false);\n        })\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n    }, 500);\n```\n\nThe `error` in `.catch(error => {` is never read. The fix is to either remove the parameter or prefix it with an underscore.\n\nThe simplest fix that doesn't change behavior is to remove the unused parameter:\n\n`.catch(() => {`\n\nLet me verify this is line 149. Let me count lines:\n\n1: import React, { useState, useEffect } from 'react';\n2: import SearchBar from './components/SearchBar';\n3: import WeatherCard from './components/WeatherCard';\n4: import ForecastCard from './components/ForecastCard';\n5: import HourlyChart from './components/HourlyChart';\n6: import SavedLocations from './components/SavedLocations';\n7: import ThemeToggle from './components/ThemeToggle';\n8: import TemperatureToggle from './components/TemperatureToggle';\n9: import { WeatherData, GeocodingResult, SavedLocation } from '."
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 888,
+      "elapsed_s": 38.57,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 354,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n  onCitySelect: (city: GeocodingResult) => void;\n}\n\nconst SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {\n  const [query, setQuery] = useState('');\n  const [results, setResults] = useState<GeocodingResult[]>([]);\n  const [isLoading, setIsLoading] = useState(false);\n  const [showResults, setShowResults] = useState(false);\n  const searchRef = useRef<HTMLDivElement>(null);\n\n  useEffect(",
+      "reasoning_preview": "The error is `Cannot find namespace 'NodeJS'` on line 30, which is `let timeoutId: NodeJS.Timeout;`.\n\nThe fix is to use `ReturnType<typeof setTimeout>` instead of `NodeJS.Timeout`, which is the standard way to type a timeout in browser environments without needing Node.js type definitions.\n\nThis is a minimal, targeted fix that doesn't change behavior.\n"
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 131,
+      "elapsed_s": 8.28,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 382,
+      "message_keys": [
+        "role",
+        "content",
+        "reasoning_content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n    let timeoutId: NodeJS.Timeout;\n=======\n    let timeoutId: ReturnType<typeof setTimeout>;\n>>>>>>> REPLACE",
+      "reasoning_preview": "The error is `TS2503: Cannot find namespace 'NodeJS'` at line 30, column 20. This is the line:\n\n```ts\nlet timeoutId: NodeJS.Timeout;\n```\n\nThe fix is to use `ReturnType<typeof setTimeout>` instead of `NodeJS.Timeout`, which is the standard way to type a timeout in a browser/React context without needing Node.js type definitions.\n\nLet me find the exact lines to search and replace.\n"
+    }
+  ],
+  "score": "4/4",
+  "finished": "2026-09-11 13:16:45"
+}

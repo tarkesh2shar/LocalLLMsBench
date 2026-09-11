@@ -1,0 +1,97 @@
+{
+  "model": "dirk-qwen3.8-27b-mtp-nothink",
+  "started": "2026-09-11 12:24:47",
+  "note": "T1/T2 only, run against an external server",
+  "baseline_errors": [
+    "src/App.tsx(149,16): error TS6133: 'error' is declared but its value is never read.",
+    "src/components/SearchBar.tsx(30,20): error TS2503: Cannot find namespace 'NodeJS'."
+  ],
+  "runs": [
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 1787,
+      "elapsed_s": 80.18,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 0,
+      "message_keys": [
+        "role",
+        "content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect } from 'react';\nimport SearchBar from './components/SearchBar';\nimport WeatherCard from './components/WeatherCard';\nimport ForecastCard from './components/ForecastCard';\nimport HourlyChart from './components/HourlyChart';\nimport SavedLocations from './components/SavedLocations';\nimport ThemeToggle from './components/ThemeToggle';\nimport TemperatureToggle from './components/TemperatureToggle';\nimport { WeatherData, GeocodingResult, SavedLocation } from './types';\nimport { WeatherService } from './services/weatherService';\n\nconst App: React.FC = () => {",
+      "reasoning_preview": ""
+    },
+    {
+      "task": "T1_shadowed_identifier",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 66,
+      "elapsed_s": 4.75,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 0,
+      "message_keys": [
+        "role",
+        "content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n        .catch(error => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n=======\n        .catch(() => {\n          setError('Failed to fetch weather data. Please try again.');\n          setLoading(false);\n        });\n>>>>>>> REPLACE",
+      "reasoning_preview": ""
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "whole_file",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 804,
+      "elapsed_s": 36.53,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 0,
+      "message_keys": [
+        "role",
+        "content"
+      ],
+      "output_preview": "```tsx\nimport React, { useState, useEffect, useRef } from 'react';\nimport { GeocodingResult } from '../types';\nimport { WeatherService } from '../services/weatherService';\n\ninterface SearchBarProps {\n  onCitySelect: (city: GeocodingResult) => void;\n}\n\nconst SearchBar: React.FC<SearchBarProps> = ({ onCitySelect }) => {\n  const [query, setQuery] = useState('');\n  const [results, setResults] = useState<GeocodingResult[]>([]);\n  const [isLoading, setIsLoading] = useState(false);\n  const [showResults, setShowResults] = useState(false);\n  const searchRef = useRef<HTMLDivElement>(null);\n\n  useEffect(",
+      "reasoning_preview": ""
+    },
+    {
+      "task": "T2_missing_namespace",
+      "arm": "search_replace",
+      "passed": true,
+      "grade": {
+        "passed": true,
+        "target_error_gone": true,
+        "new_errors_introduced": []
+      },
+      "completion_tokens": 28,
+      "elapsed_s": 3.1,
+      "finish": "stop",
+      "lines_changed": 2,
+      "reasoning_chars": 0,
+      "message_keys": [
+        "role",
+        "content"
+      ],
+      "output_preview": "<<<<<<< SEARCH\n    let timeoutId: NodeJS.Timeout;\n=======\n    let timeoutId: ReturnType<typeof setTimeout>;\n>>>>>>> REPLACE",
+      "reasoning_preview": ""
+    }
+  ],
+  "score": "4/4",
+  "finished": "2026-09-11 12:26:53"
+}

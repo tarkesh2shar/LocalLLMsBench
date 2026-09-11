@@ -476,3 +476,14 @@ already handles it; outside this harness set it yourself:
 ```bash
 export MLX_MPI_LIBNAME=$(brew --prefix open-mpi)/lib/libmpi.dylib
 ```
+
+## DFlash 2 drafter status and reproduction
+
+DFlash 2 drafters (`z-lab/Qwen3.8-27B-DFlash2-GGUF`) can be downloaded via:
+
+```bash
+python3 download_dflash2.py
+```
+
+Currently, `llama.cpp` (Metal) expects 81 tensors (`draft-dflash` v1) whereas DFlash 2 provides 58 tensors, causing an init failure (`wrong number of tensors; expected 81, got 58`). For Apple Silicon, use native MTP (`--spec-type draft-mtp`) on `Qwen3.8-27B-Q4_0.gguf` until DFlash 2 tensor schema support is merged upstream.
+
